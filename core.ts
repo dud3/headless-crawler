@@ -231,7 +231,7 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
             // TODO: other errors possible ?
         }
       }
-      page.on('response', addResponseSize);
+      page.on("response", addResponseSize);
 
       await page.on("request", request => {
         const l = parse(request.url());
@@ -285,7 +285,7 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
 
       // Off event listeners
 
-      page.off('response', addResponseSize);
+      page.off("response", addResponseSize);
 
       // Requests
 
@@ -309,12 +309,6 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
         const { loadEventEnd, navigationStart } = performance.timing;
         return loadEventEnd - navigationStart
       });
-
-      // All page content
-
-      const outerhtml = await page.evaluate(() => document.querySelector('*')?.outerHTML);
-
-      fs.writeFile('outerhtml.txt', outerhtml || ''); // debug
 
       // --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
@@ -343,7 +337,6 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
       }
 
       // Fill the form to be able to check for keyloggers from setupKeyLoggingInspector
-
       await fillForms(page);
 
       let subDomainLinks = [];
@@ -354,10 +347,9 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
       } else {
         subDomainLinks = outputLinks.first_party;
       }
+      // Gets n random elements at unique keys from collection up to the size of collection.
       const browse_links = sampleSize(subDomainLinks, numPages);
-      output.browsing_history = [output.uri_dest].concat(
-        browse_links.map(l => l.href),
-      );
+      output.browsing_history = [output.uri_dest].concat(browse_links.map(l => l.href));
 
       for (const link of output.browsing_history.slice(1)) {
         logger.log("info", `browsing now to ${link}`, { type: "Browser" });
