@@ -1,5 +1,6 @@
 import { fullLists, PuppeteerBlocker, Request } from '@cliqz/adblocker-puppeteer';
 import fetch from 'node-fetch';
+import { writeFileSync } from "fs";
 import sampleSize from "lodash.samplesize";
 import puppeteer, { Browser, LoadEvent, Page } from "puppeteer";
 import { promises as fs, readFileSync } from 'fs';
@@ -14,7 +15,12 @@ const readabilityStr = readFileSync('node_modules/@mozilla/readability/Readabili
 const { Readability } = require('@mozilla/readability');
 
 // Extensions
-
+import {
+  captureBrowserCookies,
+  clearCookiesCache,
+  setupHttpCookieCapture,
+} from "./cookie-collector";
+import { setupThirdpartyTrackersInspector } from "./third-party-trackers";
 import { autoScroll, fillForms } from "./pptr-utils/interaction-utils";
 import { dedupLinks, getLinks, getSocialLinks } from "./pptr-utils/get-links";
 import { getLogger } from "./logger";
@@ -22,8 +28,7 @@ import { generateReport } from "./parser";
 import { setupBlacklightInspector } from "./inspector";
 import { setupSessionRecordingInspector } from "./session-recording";
 import { setupKeyLoggingInspector } from "./key-logging";
-
-const logger = getLogger({ outDir: path.join(process.cwd(), "bl-tmp"), quiet: true });
+import { clearDir } from "./utils";
 
 function rexecutor() {
   return new Readability({}, document).parse();
@@ -40,6 +45,57 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
 
     let REDIRECTED_FIRST_PARTY = parse(url);
     const FIRST_PARTY = parse(url);
+
+    const defaultWaitUntil = "networkidle2";
+
+    const outDir = path.join(process.cwd(), "extract-dir");
+    clearDir(outDir);
+    const logger = getLogger({ outDir, quiet: true });
+
+    const extract = {
+      title: '',
+      dimensions: {},
+      timing: {
+        loadTime: {} as any,
+        metrics: {} as any,
+      },
+      pageSize: 0,
+      requests: {
+        data: [] as any,
+        amount: 0
+      },
+      inspectors: {},
+      keyLoggers: {},
+      content: {
+        readability: {} as any,
+        keywords: {
+          newsletter: false
+        }
+      },
+      browser: {},
+      reports: {}
+    };
+
+    const hosts = {
+      requests: {
+        first_party: new Set(),
+        third_party: new Set(),
+      },
+      links: {
+        first_party: new Set(),
+        third_party: new Set(),
+      },
+    };
+
+    const output: any = {
+      uri_ins: url,
+      uri_dest: null,
+      uri_redirects: null,
+      secure_connection: {},
+      browsing_history: null
+    };
+
+    // ...
 
     const _callBacks: Record<string, any> = {
       'request-blocked': () => {},
@@ -155,29 +211,6 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
       }
     }
 
-    const extract = {
-      title: '',
-      dimensions: {},
-      timing: {
-        loadTime: {} as any,
-        metrics: {} as any,
-      },
-      pageSize: 0,
-      requests: {
-        data: [] as any,
-        amount: 0
-      },
-      inspectors: {},
-      keyLoggers: {},
-      content: {
-        readability: {} as any,
-        keywords: {
-          newsletter: false
-        }
-      },
-      browser: {}
-    }
-
     try {
       logger.info(`Started Puppeteer with pid ${browser.process().pid}`);
 
@@ -200,6 +233,18 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
       }
       page.on('response', addResponseSize);
 
+      await page.on("request", request => {
+        const l = parse(request.url());
+        // note that hosts may appear as first and third party depending on the path
+        if (FIRST_PARTY.domain === l.domain) {
+          hosts.requests.first_party.add(l.hostname);
+        } else {
+          if (request.url().indexOf("data://") < 1 && !!l.hostname) {
+            hosts.requests.third_party.add(l.hostname);
+          }
+        }
+      });
+
       // Extensions
 
       await setupBlacklightInspector(page, event => logger.warn(event));
@@ -214,10 +259,21 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
         logger.warn(event);
       });
 
+      await setupThirdpartyTrackersInspector(
+        page,
+        event => logger.warn(event),
+        false,
+      );
+
+      await setupHttpCookieCapture(page, event => logger.warn(event));
+
       // Page response
 
       let pageResponse = null;
-      pageResponse = await page.goto(url, { waitUntil: 'networkidle2' });
+      pageResponse = await page.goto(url, {
+        timeout: timeout,
+        waitUntil: defaultWaitUntil as LoadEvent
+      });
       pageIndex++;
 
       /*
@@ -267,25 +323,6 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
         first_party: [],
         third_party: [],
       }
-
-      const hosts = {
-        requests: {
-          first_party: new Set(),
-          third_party: new Set(),
-        },
-        links: {
-          first_party: new Set(),
-          third_party: new Set(),
-        },
-      };
-
-      const output: any = {
-        uri_ins: url,
-        uri_dest: null,
-        uri_redirects: null,
-        secure_connection: {},
-        browsing_history: null
-      };
 
       output.uri_dest = page.url();
       duplicatedLinks = await getLinks(page);
@@ -388,40 +425,43 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
             );
           }).then((r: any) => {
             event_data_all = r;
+
+            if (!Array.isArray(event_data_all)) {
+              reject("Couldnt load event data");
+            }
+            if (event_data_all.length < 1) {
+              reject("Couldnt load event data");
+            }
+
+            const event_data = event_data_all.filter(event => {
+              return !!event.message.type;
+            });
+
+            const blTests = [
+              "behaviour_event_listeners",
+              "canvas_fingerprinters",
+              "canvas_font_fingerprinters"
+            ];
+
+            console.log(REDIRECTED_FIRST_PARTY.domain);
+
+            const reports = blTests.reduce((acc, cur) => {
+              acc[cur] = generateReport(
+                cur,
+                event_data,
+                '',
+                REDIRECTED_FIRST_PARTY.domain,
+              );
+              return acc;
+            }, {});
+
+            extract.reports = reports;
+
+            const json_dump = JSON.stringify({ reports }, null, 2);
+            writeFileSync(path.join(outDir, "inspection.json"), json_dump);
+
+            _callBacks['browser-extract-data'](extract);
           });
-
-          if (!Array.isArray(event_data_all)) {
-            reject("Couldnt load event data");
-          }
-          if (event_data_all.length < 1) {
-            reject("Couldnt load event data");
-          }
-
-          const event_data = event_data_all.filter(event => {
-            return !!event.message.type;
-          });
-
-          const blTests = [
-            "behaviour_event_listeners",
-            "canvas_fingerprinters",
-            "canvas_font_fingerprinters"
-          ];
-
-          const reports = blTests.reduce((acc, cur) => {
-            acc[cur] = generateReport(
-              cur,
-              event_data,
-              '',
-              REDIRECTED_FIRST_PARTY.domain,
-            );
-            return acc;
-          }, {});
-
-          console.log(reports);
-
-          process.exit();
-
-          _callBacks['browser-extract-data'](extract);
 
           resolve(1);
 

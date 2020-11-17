@@ -1,0 +1,107 @@
+{
+  "reports": {
+    "behaviour_event_listeners": {
+      "TOUCH": {
+        "https://cfl.dropboxstatic.com/static/js/packaged/pkg-dig-vendor.min-vflF5J9Oa.js": [
+          "touchend",
+          "touchstart",
+          "touchmove"
+        ],
+        "https://www.knotch-cdn.com/unit/latest/knotch.min.js": [
+          "touchend",
+          "touchmove",
+          "touchstart"
+        ]
+      },
+      "MOUSE": {
+        "https://cfl.dropboxstatic.com/static/js/packaged/pkg-dig-vendor.min-vflF5J9Oa.js": [
+          "mouseup",
+          "mousedown",
+          "mousemove"
+        ],
+        "https://www.dropbox.com/features?trigger=footer": [
+          "click"
+        ],
+        "https://aem.dropbox.com/cms/etc.clientlibs/settings/wcm/designs/dropbox-blog/clientlib-all.2e3466846200a66f85abcf42db32da2a.js": [
+          "scroll"
+        ],
+        "https://www.knotch-cdn.com/unit/latest/knotch.min.js": [
+          "scroll",
+          "mousemove"
+        ],
+        "https://storage.googleapis.com/code.snapengage.com/js/d5c1efed-d0ef-4fca-8c7d-faff398ad272.js": [
+          "click",
+          "mousedown"
+        ],
+        "https://cfl.dropboxstatic.com/static/js/packaged/pkg-spectrum-arbor-2.min-vfl0aAT8O.js": [
+          "scroll",
+          "click"
+        ],
+        "https://cfl.dropboxstatic.com/static/js/packaged/pkg-react-prod.min-vflQA7b81.js": [
+          "click"
+        ],
+        "https://www.dropbox.com/business": [
+          "click"
+        ],
+        "https://storage.googleapis.com/code.snapengage.com/js/a2ff7307-c90d-42f7-964e-30895e857aa0.js": [
+          "click",
+          "mousedown"
+        ],
+        "https://cfl.dropboxstatic.com/static/js/modules/clean/auth/register/form.min-vfl7s1Il1.js": [
+          "click"
+        ],
+        "https://cfl.dropboxstatic.com/static/js/packaged/pkg-index-page.min-vflUNG3mn.js": [
+          "scroll"
+        ],
+        "https://www.dropbox.com/": [
+          "click"
+        ]
+      },
+      "KEYBOARD": {
+        "https://cfl.dropboxstatic.com/static/js/packaged/pkg-dig-vendor.min-vflF5J9Oa.js": [
+          "keydown"
+        ],
+        "https://www.knotch-cdn.com/unit/latest/knotch.min.js": [
+          "keyup"
+        ],
+        "https://storage.googleapis.com/code.snapengage.com/js/d5c1efed-d0ef-4fca-8c7d-faff398ad272.js": [
+          "keydown"
+        ],
+        "https://cfl.dropboxstatic.com/static/js/packaged/pkg-react-prod.min-vflQA7b81.js": [
+          "keydown",
+          "keyup",
+          "input"
+        ],
+        "https://storage.googleapis.com/code.snapengage.com/js/a2ff7307-c90d-42f7-964e-30895e857aa0.js": [
+          "keydown"
+        ],
+        "https://cfl.dropboxstatic.com/static/js/packaged/pkg-i18n.min-vflMNMkIZ.js": [
+          "keyup",
+          "keydown"
+        ]
+      },
+      "SENSOR": {
+        "https://aem.dropbox.com/cms/etc.clientlibs/settings/wcm/designs/dropbox-common/clientlib-cms-common.7f3cf4624fd698d8bfec572c3c993880.js": [
+          "orientationchange"
+        ],
+        "https://aem.dropbox.com/cms/etc.clientlibs/settings/wcm/designs/dropbox-blog/clientlib-all.2e3466846200a66f85abcf42db32da2a.js": [
+          "orientationchange"
+        ]
+      }
+    },
+    "canvas_fingerprinters": {
+      "data_url": {},
+      "fingerprinters": [],
+      "styles": {
+        "https://aem.dropbox.com/cms/etc.clientlibs/settings/wcm/designs/dropbox-blog/clientlib-all.2e3466846200a66f85abcf42db32da2a.js": [
+          "rgba(0,0,0,0)"
+        ]
+      },
+      "texts": {}
+    },
+    "canvas_font_fingerprinters": {
+      "canvas_font": {},
+      "text_measure": {}
+    }
+  }
+}
