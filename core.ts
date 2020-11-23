@@ -27,7 +27,8 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
       'request-whitelisted': () => {},
       'csp-injected': () => {},
       'script-injected': () => {},
-      'style-injected': () =>  {}
+      'style-injected': () =>  {},
+      'browser-tab-closed': () => {}
     }
 
     console.log(`>>> Url: ${url}`);
@@ -82,7 +83,11 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
     } finally {
       setTimeout(async () => {
         await page.close();
+        await browser.close();
         console.log(">>> Browser tab closed: " + url);
+
+        _callBacks['browser-tab-closed']();
+
         resolve(1);
       }, timeout);
     }

@@ -43,7 +43,7 @@
                   <q-card-section>
                     <q-list bordered separator>
                       <q-item clickable v-ripple v-for="(item, index) in data" :key="index" class="ellipsis">
-                        <q-item-section class="ellipsis">{{ item }}</q-item-section>
+                        <q-item-section class="ellipsis"><span class="text-bold">{{ item.type }}</span> {{ item.url }}</q-item-section>
                       </q-item>
                     </q-list>
                   </q-card-section>
@@ -53,6 +53,7 @@
           </div>
         </div>
       </q-page-container>
+
 
       <q-footer elevated class="bg-grey-8 text-white">
         <q-toolbar>

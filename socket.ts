@@ -26,8 +26,9 @@ io.on("connection", async (socket: any) => {
     console.log("on: send-url: " + url);
 
     const cbs: Record<string, any> = {
-      'request-blocked': (request: any) => { console.log(request.url); socket.emit("request-blocked", request.url); },
-      'script-injected': (script: string, url: string) => {}
+      'request-blocked': (request: any) => { console.log(request.url); socket.emit("request-blocked", { url: request.url, type: request.type }); },
+      'script-injected': (script: string, url: string) => {},
+      'browser-tab-closed': () => { socket.emit('browser-tab-closed'); }
     }
 
     await core.main(url, cbs, 8000, true);

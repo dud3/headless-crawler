@@ -45,7 +45,7 @@
                   <q-card-section>
                     <q-list bordered separator>
                       <q-item clickable v-ripple v-for="(item, index) in data" :key="index" class="ellipsis">
-                        <q-item-section class="ellipsis">{{ item }}</q-item-section>
+                        <q-item-section class="ellipsis"><span class="text-bold">{{ item.type }}</span> {{ item.url }}</q-item-section>
                       </q-item>
                     </q-list>
                   </q-card-section>
@@ -90,13 +90,15 @@
     created () {
       const arr = {
         'request-blocked': (url) => {
+          console.log(url);
           this.data.push(url);
         },
         'request-redirected': (request) => {},
         'request-whitelisted': (request) => {},
         'csp-injected': (request) => {},
         'script-injected': (script, url) => {},
-        'style-injected': (script, url) =>  {}
+        'style-injected': (script, url) =>  {},
+        'browser-tab-closed': () => { this.loading = false; this.$q.notify({ position: 'top', color: 'green', message: 'Site extracted (browser tab closed)' }) }
       };
 
       for (const key in arr) {
@@ -106,6 +108,7 @@
     methods: {
       extract: function () {
         this.data = [];
+        this.loading = true;
 
         console.log(this.url, window.socket);
 

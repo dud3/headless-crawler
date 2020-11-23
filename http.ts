@@ -26,7 +26,7 @@ app.post('/url', async function (req: any, res: any) {
   let blocked: Array<any> = [];
 
   const cbs: Record<string, any> = {
-      'request-blocked': (request: any) => { blocked.push(request.url); console.log(request.url); },
+      'request-blocked': (request: any) => { blocked.push({ url: request.url, type: request.type }); console.log(request.url); },
       'script-injected': (script: string, url: string) => { console.log(script, url); }
   }
 
