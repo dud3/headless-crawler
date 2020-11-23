@@ -1,0 +1,28 @@
+{
+  // "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "noEmit": true,
+    "composite": true,
+    "noUnusedLocals": false,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true
+  },
+  "noUnusedLocals": false,
+  "references": [
+    // { "path": "../adblocker-puppeteer/tsconfig.json" }
+  ],
+  "files": [
+    "./index.ts"
+  ]
+}

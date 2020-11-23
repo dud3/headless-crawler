@@ -1,0 +1,51 @@
+{
+  "name": "SiteExtractor",
+  "private": true,
+  "version": "1.18.4",
+  "description": "Site extractor",
+  "author": {
+    "name": "Cliqz"
+  },
+  "homepage": "",
+  "license": "MPL-2.0",
+  "files": [
+    "LICENSE",
+    "index.ts"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/cliqz-oss/adblocker.git",
+    "directory": "packages/adblocker-puppeteer-example"
+  },
+  "scripts": {
+    "start-http-server": " ts-node --project ./tsconfig.json http.ts",
+    "start-socket-server": "ts-node --project ./tsconfig.json socket.ts",
+    "shell": "ts-node --project ./tsconfig.json shell.ts"
+  },
+  "bugs": {
+    "url": "https://github.com/cliqz-oss/adblocker/issues"
+  },
+  "dependencies": {
+    "@cliqz/adblocker-puppeteer": "^1.18.4",
+    "@cliqz/adblocker-webextension": "^1.18.4",
+    "@types/puppeteer": "^5.4.0",
+    "@types/socket.io": "^2.1.11",
+    "axios": "^0.21.0",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "kue": "^0.11.6",
+    "node-fetch": "^2.6.0",
+    "puppeteer": "5.x",
+    "socket.io": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/express": "^4.17.8",
+    "@types/kue": "^0.11.13",
+    "@types/node-fetch": "^2.5.4",
+    "ts-node": "^9.0.0",
+    "tslint": "^6.0.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^4.0.2"
+  }
+}
