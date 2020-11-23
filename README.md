@@ -1,6 +1,6 @@
 npm install @types/puppeteer
+
 npm install -g socket.io
-...
 
 yran isntall
 
