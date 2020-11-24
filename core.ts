@@ -28,7 +28,8 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
       'csp-injected': () => {},
       'script-injected': () => {},
       'style-injected': () =>  {},
-      'browser-tab-closed': () => {}
+      'browser-tab-closed': () => {},
+      'browser-page-data': () => {}
     }
 
     console.log(`>>> Url: ${url}`);
@@ -117,10 +118,26 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
       }
     }
 
+    const extract = {
+      title: '',
+      dimensions: {}
+    }
+
     try {
       await page.goto(url);
+
+      extract.title = await page.title(); // page._frameManager._mainFrame.evaluate(() => document.title)
+
+      // Get the "viewport" of the page, as reported by the page.
+      extract.dimensions = await page.evaluate(() => {
+        return {
+          width: document.documentElement.clientWidth,
+          height: document.documentElement.clientHeight,
+          deviceScaleFactor: window.devicePixelRatio
+        };
+      });
     } catch (e) {
-      console.log(e);
+      throw new Error(e);
     } finally {
       setTimeout(async () => {
         await page.close();
@@ -128,6 +145,7 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
         console.log(">>> Browser tab closed: " + url);
 
         _callBacks['browser-tab-closed']();
+        _callBacks['browser-page-data'](extract);
 
         resolve(1);
       }, timeout);

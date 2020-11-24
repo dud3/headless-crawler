@@ -6,19 +6,17 @@ if (url.length == 0) { console.log('The url param is missing, usage: yarn shell 
 
 (async () => {
 	let blocked: Array<any> = [];
+	let page: Record<string, any> = {}
 
 	const cbs: Record<string, any> = {
 	    'request-blocked': (request: any) => { blocked.push(request); console.log(request.url); },
-	    'script-injected': (script: string, url: string) => { console.log(script, url); }
+	    'script-injected': (script: string, url: string) => { console.log(script, url); },
+	    'browser-page-data': (page: any) => { page = page; console.log(page) }
 	}
 
 	await core.main(url, cbs, 8000, true);
 
-	blocked.map(b => {
-		console.log({
-			tabId: b.tabId,
-			type: b.type,
-			url: b.url
-		})
-	})
+	page.blocked = blocked.map(b => { return { tabId: b.tabId, type: b.type, url: b.url } })
+
+	console.log(page)
 })();
