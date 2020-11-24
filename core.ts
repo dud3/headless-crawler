@@ -70,6 +70,47 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
         case 'script-injected':
         case 'style-injected':
             blocker.on(key, (script: string, url: string) => {
+              /*
+                if (style) {
+                  // Style is of the form:
+                  //
+                  // <STYLESHEET 1>
+                  //
+                  // <STYLESHEET 2>
+                  //
+                  // ...
+                  //
+                  // Where each stylesheet has the format:
+                  //
+                  // selector1,
+                  // selector2,
+                  // selector3,
+                  // ...
+                  // selectorN { <Some CSS> }
+                  //
+                  // To get individual selectors we first split each stylesheet individually.
+                  // Then we split the stylesheet into its individual selectors.
+                  for (const stylesheet of style.split('}\n\n')) {
+                    const selectors = stylesheet.split(',\n');
+
+                    // Strip the '{ <Some CSS> }' part from last line.
+                    if (selectors.length !== 0) {
+                      const lastSelector = selectors[selectors.length - 1];
+                      const endOfLastSelector = lastSelector.lastIndexOf('{');
+                      if (endOfLastSelector !== -1) {
+                        selectors[selectors.length - 1] = lastSelector.slice(0, endOfLastSelector).trim();
+                      }
+                    }
+
+                    // Check each selector against the page.
+                    for (const selector of selectors) {
+                      if ((await page.$(selector)) !== null) {
+                        console.log('Got a matching selector:', selector);
+                      }
+                    }
+                  }
+                }
+              */
               _callBacks[key](script, url);
             })
         break;
