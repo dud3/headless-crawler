@@ -28,7 +28,8 @@ io.on("connection", async (socket: any) => {
     const cbs: Record<string, any> = {
       'request-blocked': (request: any) => { console.log(request.url); socket.emit("request-blocked", { url: request.url, type: request.type }); },
       'script-injected': (script: string, url: string) => {},
-      'browser-tab-closed': () => { socket.emit('browser-tab-closed'); }
+      'browser-tab-closed': () => { socket.emit('browser-tab-closed'); },
+      'browser-extract-data': (extract: any) => { socket.emit("browser-extract-data", extract }
     }
 
     await core.main(url, cbs, 8000, true);

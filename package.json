@@ -28,6 +28,10 @@
   "dependencies": {
     "@cliqz/adblocker-puppeteer": "^1.18.4",
     "@cliqz/adblocker-webextension": "^1.18.4",
+    "@mozilla/readability": "^0.3.0",
+    "@themarkup/blacklight-collector": "^2.1.11",
+    "@types/mozilla-readability": "^0.2.0",
+    "@types/node": "^14.14.10",
     "@types/puppeteer": "^5.4.0",
     "@types/socket.io": "^2.1.11",
     "axios": "^0.21.0",

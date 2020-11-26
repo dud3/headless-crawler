@@ -6,17 +6,19 @@ if (url.length == 0) { console.log('The url param is missing, usage: yarn shell 
 
 (async () => {
 	let blocked: Array<any> = [];
-	let page: Record<string, any> = {}
+	let thextract: any = {};
 
 	const cbs: Record<string, any> = {
-	    'request-blocked': (request: any) => { blocked.push(request); console.log(request.url); },
-	    'script-injected': (script: string, url: string) => { console.log(script, url); },
-	    'browser-page-data': (page: any) => { page = page; console.log(page) }
+	    'request-blocked': (request: any) => { blocked.push(request); /* console.log(request.url); */ },
+	    'script-injected': (script: string, url: string) => { /* console.log(script, url); */ },
+	    'browser-extract-data': (extract: any) => { thextract = extract; }
 	}
 
-	await core.main(url, cbs, 8000, true);
+	await core.main(url, cbs, 8000, false);
 
-	page.blocked = blocked.map(b => { return { tabId: b.tabId, type: b.type, url: b.url } })
+	thextract.blocked = {} as any;
+	thextract.blocked.data = blocked.map(b => { return { tabId: b.tabId, type: b.type, url: b.url } });
+	thextract.blocked.amount = thextract.blocked.data.length;
 
-	console.log(page)
+	console.log(thextract);
 })();

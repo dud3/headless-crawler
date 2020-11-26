@@ -16,9 +16,11 @@
     "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false
   },
   "noUnusedLocals": false,
+  "noImplicitAny": false,
   "references": [
     // { "path": "../adblocker-puppeteer/tsconfig.json" }
   ],

@@ -24,15 +24,21 @@ app.get('/', function (req: any, res: any) {
 
 app.post('/url', async function (req: any, res: any) {
   let blocked: Array<any> = [];
+  let thextract: any = {};
 
   const cbs: Record<string, any> = {
-      'request-blocked': (request: any) => { blocked.push({ url: request.url, type: request.type }); console.log(request.url); },
-      'script-injected': (script: string, url: string) => { console.log(script, url); }
+      'request-blocked': (request: any) => { blocked.push(request); /* console.log(request.url); */ },
+      'script-injected': (script: string, url: string) => { /* console.log(script, url); */ },
+      'browser-extract-data': (extract: any) => { thextract = extract; }
   }
 
   await core.main(req.body.url, cbs, 8000, true);
 
-  res.json(blocked);
+  thextract.blocked = {} as any;
+  thextract.blocked.data = blocked.map(b => { return { tabId: b.tabId, type: b.type, url: b.url } });
+  thextract.blocked.amount = thextract.blocked.data.length;
+
+  res.json(thextract);
 });
 
 http.listen(port, function() {
