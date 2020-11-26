@@ -20,7 +20,8 @@
   "scripts": {
     "start-http-server": " ts-node --project ./tsconfig.json http.ts",
     "start-socket-server": "ts-node --project ./tsconfig.json socket.ts",
-    "shell": "ts-node --project ./tsconfig.json shell.ts"
+    "shell": "ts-node --project ./tsconfig.json shell.ts",
+    "start-client-server": " ts-node --project ./tsconfig.json client-server.ts"
   },
   "bugs": {
     "url": "https://github.com/cliqz-oss/adblocker/issues"

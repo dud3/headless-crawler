@@ -1,7 +1,7 @@
 import * as socketio from "socket.io";
 import core from "./core";
 
-const port = 3001
+const port = 3002
 const express = require('express')
 const app = express();
 app.set("port", port);

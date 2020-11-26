@@ -1,7 +1,7 @@
 import core from "./core";
 import * as path from "path";
 
-const port = 3000
+const port = 3001
 const express = require('express')
 const bodyParser = require('body-parser');
 const app = express();
