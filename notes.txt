@@ -1,0 +1,9 @@
+# Open 3000+ ports
+
+	It seems you haven’t opened port 3000 for external use. You’ll need to open it in order for you to be able to reach your application on the said port.
+
+	If you are using UFW, you can execute
+		sudo ufw allow 3000
+
+	If you are using only IPtables, you can execute
+		iptables -A INPUT -i eth0 -p tcp -m tcp --dport 3000 -j ACCEPT

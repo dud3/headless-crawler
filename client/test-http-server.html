@@ -92,7 +92,7 @@
 
         axios.post(api + '/url', { url: this.url }).then((r) => {
           console.log(r.data);
-          this.data.push(r.data);
+          this.data = [r.data];
         }).catch((e) => {
           this.loading = false;
           this.$q.notify({
