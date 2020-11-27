@@ -10,7 +10,7 @@ if (url.length == 0) { console.log('The url param is missing, usage: yarn shell 
 
 	const cbs: Record<string, any> = {
 	    'request-blocked': (request: any) => { blocked.push(request); /* console.log(request.url); */ },
-	    'script-injected': (script: string, url: string) => { /* console.log(script, url); */ },
+	    'script-injected': (script: string, url: string) => { console.log(script, url); },
 	    'browser-extract-data': (extract: any) => { thextract = extract; }
 	}
 

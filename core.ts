@@ -1,9 +1,11 @@
 import { fullLists, PuppeteerBlocker, Request } from '@cliqz/adblocker-puppeteer';
 import fetch from 'node-fetch';
-import * as puppeteer from 'puppeteer';
+import puppeteer, { Browser, LoadEvent, Page } from "puppeteer";
 import { promises as fs, readFileSync } from 'fs';
 import * as path from "path";
 import * as url from "url";
+import os from "os";
+import { getDomain, getSubdomain, parse } from "tldts";
 
 // Use the js str to pass it to the puppeteer evaluation scope
 
@@ -12,8 +14,11 @@ const { Readability } = require('@mozilla/readability');
 
 // Extensions
 
+import { autoScroll, fillForms } from "./pptr-utils/interaction-utils";
+import { dedupLinks, getLinks, getSocialLinks } from "./pptr-utils/get-links";
 import { getLogger } from "./logger"; // note: not used yet
 import { setupSessionRecordingInspector } from "./session-recording";
+import { setupKeyLoggingInspector } from "./key-logging";
 
 function getUrlToLoad(purl: string): string {
   let url = purl;
@@ -54,7 +59,8 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
 
     const browser = await puppeteer.launch({
       defaultViewport: null,
-      headless: headless
+      headless: headless,
+      devtools: true
     });
 
     const blocker = await PuppeteerBlocker.fromLists(fetch, fullLists, {
@@ -145,17 +151,15 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
         data: [] as any,
         amount: 0
       },
-      network: {
-        requets: [] as any,
-        amount: 0
-      },
       inspectors: {},
+      keyLoggers: {},
       content: {
         readability: {} as any,
         keywords: {
           newsletter: false
         }
-      }
+      },
+      browser: {}
     }
 
     try {
@@ -163,22 +167,65 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
 
       // All requests
 
-      page.on('response', (response) => { extract.requests.data.push(response.url()); });
+      page.on('response', (response) => {
+        const url = response.url();
+        extract.requests.data.push(url);
+      });
+
+      // Page size
+
+      async function addResponseSize(response) {
+        try {
+            const buffer = await response.buffer();
+            extract.pageSize += buffer.length;
+        } catch {
+            // Error: Response body is unavailable for redirect responses
+            // TODO: other errors possible ?
+        }
+      }
+      page.on('response', addResponseSize);
+
+      // Extensions
 
       await setupSessionRecordingInspector(page, event => {
         extract.inspectors = event
       });
 
-      await page.goto(url);
+      await setupKeyLoggingInspector(page, event => {
+        extract.keyLoggers = event;
+      });
+
+      // Page response
+
+      let pageResponse = null;
+      pageResponse = await page.goto(url, { waitUntil: 'networkidle2' });
+
+      // Off event listeners
+
+      page.off('response', addResponseSize);
+
+      // Requests
 
       extract.requests.amount = extract.requests.data.length;
+
+      // Browser
+
+      extract.browser = {
+        name: "Chromium",
+        version: await browser.version(),
+        user_agent: await browser.userAgent(),
+        platform: {
+          name: os.type(),
+          version: os.release(),
+        },
+      };
 
       // Timing
 
       extract.timing.loadTime = await page.evaluate(_ => {
         const { loadEventEnd, navigationStart } = performance.timing;
         return loadEventEnd - navigationStart
-      })
+      });
 
       // All page content
 
@@ -186,44 +233,79 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
 
       fs.writeFile('outerhtml.txt', outerhtml || ''); // debug
 
+      let duplicatedLinks = [];
+      const outputLinks = {
+        first_party: [],
+        third_party: [],
+      }
+
+      // Log network requests and page links
+      // note: not used yet
+
+      const hosts = {
+        requests: {
+          first_party: new Set(),
+          third_party: new Set(),
+        },
+        links: {
+          first_party: new Set(),
+          third_party: new Set(),
+        },
+      };
+
+      let REDIRECTED_FIRST_PARTY = parse(url);
+
+      for (const link of dedupLinks(duplicatedLinks)) {
+        const l = parse(link.href);
+
+        if (REDIRECTED_FIRST_PARTY.domain === l.domain) {
+          outputLinks.first_party.push(link);
+          hosts.links.first_party.add(l.hostname);
+        } else {
+          if (l.hostname && l.hostname !== "data") {
+            outputLinks.third_party.push(link);
+            hosts.links.third_party.add(l.hostname);
+          }
+        }
+      }
+      duplicatedLinks = await getLinks(page);
+
+      // Fill the form to be able to check for keyloggers from setupKeyLoggingInspector
+
+      await fillForms(page);
       // ...
     } catch (e) {
       throw new Error(e);
     } finally {
       setTimeout(async () => {
+        try {
         extract.title = await page.title(); // page._frameManager._mainFrame.evaluate(() => document.title)
-        extract.timing.metrics = await page.metrics(); // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#pagemetrics
+          extract.timing.metrics = await page.metrics(); // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#pagemetrics
 
-        extract.network.requets = JSON.parse(
-          await page.evaluate(() => JSON.stringify(performance.getEntries()))
-        );
+          extract.content.readability = await page.evaluate(`
+            (function(){
+              ${readabilityStr}
+              ${rexecutor}
+              return rexecutor();
+            }())
+          `);
 
-        extract.network.amount = extract.network.requets.length
-        const xs = extract.network.requets.filter((r: any) => r.transferSize !== undefined).map((r: any) => r.transferSize).reduce((x: number, y: number) => x + y)
-        const ys = extract.network.requets.filter((r: any) => r.encodedBodySize !== undefined).map((r: any) => r.encodedBodySize).reduce((x: number, y: number) => x + y);
-        const zs = extract.network.requets.filter((r: any) => r.decodedBodySize !== undefined).map((r: any) => r.decodedBodySize).reduce((x: number, y: number) => x + y);
+          extract.content.keywords.newsletter = extract.content.readability.content == undefined ? false : extract.content.readability.content.toLowerCase().indexOf('newsletter') > -1
 
-        extract.pageSize = xs + ys + zs;
+          await page.close();
+          await browser.close();
 
-        extract.content.readability = await page.evaluate(`
-          (function(){
-            ${readabilityStr}
-            ${rexecutor}
-            return rexecutor();
-          }())
-        `);
+          console.log(">>> Browser tab closed: " + url);
 
-        extract.content.keywords.newsletter = extract.content.readability.content == undefined ? false : extract.content.readability.content.toLowerCase().indexOf('newsletter') > -1
+          _callBacks['browser-tab-closed']();
+          _callBacks['browser-extract-data'](extract);
 
-        await page.close();
-        await browser.close();
+          resolve(1);
 
-        console.log(">>> Browser tab closed: " + url);
-
-        _callBacks['browser-tab-closed']();
-        _callBacks['browser-extract-data'](extract);
-
-        resolve(1);
+          // ...
+        } catch (e) {
+          throw new Error(e);
+        }
       }, timeout);
     }
   });

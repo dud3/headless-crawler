@@ -9,18 +9,30 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "esModuleInterop": true, // this caused import * as puppeteer from 'puppeteer'; not to work, instead changed it to import puppeteer, { Browser, LoadEvent, Page } from "puppeteer";
     "moduleResolution": "node",
-    "strict": true,
+    // "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false
+    // "noImplicitAny": false,
+    // "noImplicitAny": false,
+    // "strictNullChecks": false,
+    // "strictFunctionTypes": false,
+    // "strictPropertyInitialization": false,
+    // "noImplicitThis": true /* Raise error on 'this' expressions with an implied 'any' type. */,
+    // "alwaysStrict": true /* Parse in strict mode and emit "use strict" for each source file. */,
+    /* Additional Checks */
+    "noImplicitReturns": true /* Report error when not all code paths in function return a value. */,
+    /* Debugging Options */
+    "traceResolution": false /* Report module resolution log messages. */,
+    "listEmittedFiles": false /* Print names of generated files part of the compilation. */,
+    "listFiles": false /* Print names of files part of the compilation. */,
+    "pretty": true /* Stylize errors and messages using color and context. */,
   },
   "noUnusedLocals": false,
-  "noImplicitAny": false,
   "references": [
     // { "path": "../adblocker-puppeteer/tsconfig.json" }
   ],

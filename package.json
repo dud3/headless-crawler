@@ -37,6 +37,7 @@
     "@types/socket.io": "^2.1.11",
     "axios": "^0.21.0",
     "body-parser": "^1.19.0",
+    "crypto": "^1.0.1",
     "express": "^4.17.1",
     "kue": "^0.11.6",
     "node-fetch": "^2.6.0",
