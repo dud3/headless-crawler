@@ -1,5 +1,6 @@
 import { fullLists, PuppeteerBlocker, Request } from '@cliqz/adblocker-puppeteer';
 import fetch from 'node-fetch';
+import sampleSize from "lodash.samplesize";
 import puppeteer, { Browser, LoadEvent, Page } from "puppeteer";
 import { promises as fs, readFileSync } from 'fs';
 import * as path from "path";
@@ -16,18 +17,12 @@ const { Readability } = require('@mozilla/readability');
 
 import { autoScroll, fillForms } from "./pptr-utils/interaction-utils";
 import { dedupLinks, getLinks, getSocialLinks } from "./pptr-utils/get-links";
-import { getLogger } from "./logger"; // note: not used yet
+import { getLogger } from "./logger";
+import { setupBlacklightInspector } from "./inspector";
 import { setupSessionRecordingInspector } from "./session-recording";
 import { setupKeyLoggingInspector } from "./key-logging";
 
-function getUrlToLoad(purl: string): string {
-  let url = purl;
-  if (process.argv[process.argv.length - 1].endsWith('.ts') === false) {
-    url = process.argv[process.argv.length - 1];
-  }
-
-  return url;
-}
+const logger = getLogger({ outDir: path.join(process.cwd(), "bl-tmp"), quiet: true });
 
 function rexecutor() {
   return new Readability({}, document).parse();
@@ -36,10 +31,11 @@ function rexecutor() {
 // Array of functions
 // callBacks = {'request-blocked': (reuest) => {...}, }
 
-async function main (url: string, callBacks: Record<string, any>, timeout?: number, headless?: boolean) {
+async function main (url: string, callBacks: Record<string, any>, timeout?: number, headless?: boolean, numPages?: number) {
   return new Promise(async (resolve, reject) => {
     timeout = timeout || 4000;
-    headless = headless == undefined ? true : headless
+    headless = headless == undefined ? true : headless;
+    numPages = numPages || 3;
 
     const _callBacks: Record<string, any> = {
       'request-blocked': () => {},
@@ -57,11 +53,18 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
 
     for (const key in callBacks) if (typeof callBacks[key] === 'function') _callBacks[key] = callBacks[key]
 
+    let didBrowserDisconnect = false;
     const browser = await puppeteer.launch({
       defaultViewport: null,
       headless: headless,
-      devtools: true
+      devtools: false
     });
+    browser.on("disconnected", () => {
+      didBrowserDisconnect = true;
+    });
+    if (didBrowserDisconnect) {
+      reject("Chrome crashed");
+    }
 
     const blocker = await PuppeteerBlocker.fromLists(fetch, fullLists, {
       enableCompression: true,
@@ -163,18 +166,15 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
     }
 
     try {
-      console.info(`>>> Started Puppeteer with pid ${browser.process().pid}`);
+      logger.info(`Started Puppeteer with pid ${browser.process().pid}`);
 
       // All requests
-
-      page.on('response', (response) => {
-        const url = response.url();
-        extract.requests.data.push(url);
-      });
-
       // Page size
 
       async function addResponseSize(response) {
+        const url = response.url();
+        extract.requests.data.push(url);
+
         try {
             const buffer = await response.buffer();
             extract.pageSize += buffer.length;
@@ -187,18 +187,29 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
 
       // Extensions
 
+      await setupBlacklightInspector(page, event => logger.warn(event));
+
       await setupSessionRecordingInspector(page, event => {
-        extract.inspectors = event
+        extract.inspectors = event;
+        logger.warn(event);
       });
 
       await setupKeyLoggingInspector(page, event => {
         extract.keyLoggers = event;
+        logger.warn(event);
       });
 
       // Page response
 
       let pageResponse = null;
       pageResponse = await page.goto(url, { waitUntil: 'networkidle2' });
+
+      /*
+        const page2 = await browser.newPage();
+        await page2.goto('https://cnn.com', { waitUntil: 'networkidle2' });
+        await page2.bringToFront();
+        await page2.close();
+      */
 
       // Off event listeners
 
@@ -233,14 +244,13 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
 
       fs.writeFile('outerhtml.txt', outerhtml || ''); // debug
 
+      // --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
       let duplicatedLinks = [];
       const outputLinks = {
         first_party: [],
         third_party: [],
       }
-
-      // Log network requests and page links
-      // note: not used yet
 
       const hosts = {
         requests: {
@@ -251,6 +261,14 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
           first_party: new Set(),
           third_party: new Set(),
         },
+      };
+
+      const output: any = {
+        uri_ins: url,
+        uri_dest: null,
+        uri_redirects: null,
+        secure_connection: {},
+        browsing_history: null
       };
 
       let REDIRECTED_FIRST_PARTY = parse(url);
@@ -269,6 +287,32 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
         }
       }
       duplicatedLinks = await getLinks(page);
+
+      let subDomainLinks = [];
+      if (getSubdomain(output.uri_dest) !== "www") {
+        subDomainLinks = outputLinks.first_party.filter(f => {
+          return getSubdomain(f.href) === getSubdomain(output.uri_dest);
+        });
+      } else {
+        subDomainLinks = outputLinks.first_party;
+      }
+      const browse_links = sampleSize(subDomainLinks, numPages);
+      output.browsing_history = [output.uri_dest].concat(
+        browse_links.map(l => l.href),
+      );
+
+      for (const link of output.browsing_history.slice(1)) {
+        logger.log("info", `browsing now to ${link}`, { type: "Browser" });
+        if (didBrowserDisconnect) {
+          return {
+            status: "failed",
+            page_response: "Chrome crashed",
+          };
+        }
+        await page.goto(link, {
+          timeout: defaultTimeout,
+          waitUntil: "networkidle2",
+        });
 
       // Fill the form to be able to check for keyloggers from setupKeyLoggingInspector
 

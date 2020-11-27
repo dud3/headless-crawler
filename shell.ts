@@ -14,7 +14,7 @@ if (url.length == 0) { console.log('The url param is missing, usage: yarn shell 
 	    'browser-extract-data': (extract: any) => { thextract = extract; }
 	}
 
-	await core.main(url, cbs, 8000, false);
+	await core.main(url, cbs, 16000, false);
 
 	thextract.blocked = {} as any;
 	thextract.blocked.data = blocked.map(b => { return { tabId: b.tabId, type: b.type, url: b.url } });
