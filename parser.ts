@@ -7,7 +7,7 @@ import {
 } from "./fb-pixel-lookup";
 import {
   BEHAVIOUR_TRACKING_EVENTS,
-  BlacklightEvent,
+  ExtractorEvent,
   FINGERPRINTABLE_WINDOW_APIS,
   JsInstrumentEvent,
   KeyLoggingEvent,
@@ -48,7 +48,7 @@ const filterByEvent = (messages, typePattern) => {
       m.message.type.includes(typePattern) && !m.message.type.includes("Error"),
   );
 };
-const getEventData = (reportType, messages): BlacklightEvent[] => {
+const getEventData = (reportType, messages): ExtractorEvent[] => {
   let filtered = [];
   switch (reportType) {
     case "cookies":
@@ -84,7 +84,7 @@ const getEventData = (reportType, messages): BlacklightEvent[] => {
   }
   return filtered.map(m => m.message);
 };
-const reportSessionRecorders = (eventData: BlacklightEvent[]) => {
+const reportSessionRecorders = (eventData: ExtractorEvent[]) => {
   const report = {};
   eventData.forEach((event: SessionRecordingEvent) => {
     const match = event.matches[0];
@@ -101,7 +101,7 @@ const reportSessionRecorders = (eventData: BlacklightEvent[]) => {
 };
 
 const MONITORED_EVENTS = [].concat(...Object.values(BEHAVIOUR_TRACKING_EVENTS));
-const reportEventListeners = (eventData: BlacklightEvent[]) => {
+const reportEventListeners = (eventData: ExtractorEvent[]) => {
   const parsedEvents = [];
   eventData.forEach((event: JsInstrumentEvent) => {
     const data = event.data;
@@ -123,7 +123,7 @@ const reportEventListeners = (eventData: BlacklightEvent[]) => {
     }
   });
   const output = parsedEvents.reduce((acc, cur) => {
-    const script = getScriptUrl(cur as BlacklightEvent);
+    const script = getScriptUrl(cur as ExtractorEvent);
     const data = cur.data;
     if (!script) {
       return acc;
@@ -152,18 +152,18 @@ const reportEventListeners = (eventData: BlacklightEvent[]) => {
   return serializable;
 };
 
-export const reportCanvasFingerprinters = (eventData: BlacklightEvent[]) => {
+export const reportCanvasFingerprinters = (eventData: ExtractorEvent[]) => {
   return getCanvasFp(eventData);
 };
 
 export const reportCanvasFontFingerprinters = (
-  eventData: BlacklightEvent[],
+  eventData: ExtractorEvent[],
 ) => {
   return getCanvasFontFp(eventData);
 };
 
 export const reportCookieEvents = (
-  eventData: BlacklightEvent[],
+  eventData: ExtractorEvent[],
   dataDir,
   url,
 ) => {
@@ -171,7 +171,7 @@ export const reportCookieEvents = (
   return matchCookiesToEvents(browser_cookies, eventData, url);
 };
 
-const reportKeyLogging = (eventData: BlacklightEvent[]) => {
+const reportKeyLogging = (eventData: ExtractorEvent[]) => {
   const groupByRequestPs = groupBy("post_request_ps");
   return groupByRequestPs(
     eventData.map((m: KeyLoggingEvent) => ({
@@ -182,7 +182,7 @@ const reportKeyLogging = (eventData: BlacklightEvent[]) => {
 };
 
 const WINDOW_FP_LIST = [].concat(...Object.values(FINGERPRINTABLE_WINDOW_APIS));
-const reportFingerprintableAPIs = (eventData: BlacklightEvent[]) => {
+const reportFingerprintableAPIs = (eventData: ExtractorEvent[]) => {
   const parsedEvents = [];
   eventData.forEach((event: JsInstrumentEvent) => {
     const data = event.data;
@@ -198,7 +198,7 @@ const reportFingerprintableAPIs = (eventData: BlacklightEvent[]) => {
     }
   });
   const output = parsedEvents.reduce((acc, cur) => {
-    const script = getScriptUrl(cur as BlacklightEvent);
+    const script = getScriptUrl(cur as ExtractorEvent);
     if (!script) {
       return acc;
     }
@@ -226,7 +226,7 @@ const reportFingerprintableAPIs = (eventData: BlacklightEvent[]) => {
   return serializable;
 };
 
-const reportThirdPartyTrackers = (eventData: BlacklightEvent[], fpDomain) => {
+const reportThirdPartyTrackers = (eventData: ExtractorEvent[], fpDomain) => {
   return eventData.filter(e => {
     const requestDomain = getDomain(e.url);
     const isThirdPartyDomain = requestDomain && requestDomain !== fpDomain;
@@ -234,7 +234,7 @@ const reportThirdPartyTrackers = (eventData: BlacklightEvent[], fpDomain) => {
   });
 };
 
-const reportFbPixelEvents = (eventData: BlacklightEvent[]) => {
+const reportFbPixelEvents = (eventData: ExtractorEvent[]) => {
   const events = eventData.filter(
     (e: TrackingRequestEvent) =>
       e.url.includes("facebook") &&

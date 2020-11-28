@@ -18,6 +18,7 @@ const { Readability } = require('@mozilla/readability');
 import { autoScroll, fillForms } from "./pptr-utils/interaction-utils";
 import { dedupLinks, getLinks, getSocialLinks } from "./pptr-utils/get-links";
 import { getLogger } from "./logger";
+import { generateReport } from "./parser";
 import { setupBlacklightInspector } from "./inspector";
 import { setupSessionRecordingInspector } from "./session-recording";
 import { setupKeyLoggingInspector } from "./key-logging";
@@ -37,6 +38,9 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
     headless = headless == undefined ? true : headless;
     numPages = numPages || 3;
 
+    let REDIRECTED_FIRST_PARTY = parse(url);
+    const FIRST_PARTY = parse(url);
+
     const _callBacks: Record<string, any> = {
       'request-blocked': () => {},
       'request-redirected': () => {},
@@ -55,10 +59,16 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
 
     let didBrowserDisconnect = false;
     const browser = await puppeteer.launch({
+      args: [
+        "--no-sandbox",
+        "--disable-dev-shm-usage",
+        "--ignore-certificate-errors",
+        "--autoplay-policy=no-user-gesture-required",
+      ],
       defaultViewport: null,
-      headless: headless,
-      devtools: false
+      headless,
     });
+
     browser.on("disconnected", () => {
       didBrowserDisconnect = true;
     });
@@ -75,6 +85,9 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
     });
 
     const page = await browser.newPage();
+    const deviceOptions = puppeteer.devices['iPhone X'];
+    page.emulate(deviceOptions);
+
     await blocker.enableBlockingInPage(page);
 
     for (const key in callBacks) {
@@ -168,6 +181,8 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
     try {
       logger.info(`Started Puppeteer with pid ${browser.process().pid}`);
 
+      let pageIndex = 0;
+
       // All requests
       // Page size
 
@@ -203,6 +218,7 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
 
       let pageResponse = null;
       pageResponse = await page.goto(url, { waitUntil: 'networkidle2' });
+      pageIndex++;
 
       /*
         const page2 = await browser.newPage();
@@ -271,7 +287,9 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
         browsing_history: null
       };
 
-      let REDIRECTED_FIRST_PARTY = parse(url);
+      output.uri_dest = page.url();
+      duplicatedLinks = await getLinks(page);
+      REDIRECTED_FIRST_PARTY = parse(output.uri_dest);
 
       for (const link of dedupLinks(duplicatedLinks)) {
         const l = parse(link.href);
@@ -286,7 +304,10 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
           }
         }
       }
-      duplicatedLinks = await getLinks(page);
+
+      // Fill the form to be able to check for keyloggers from setupKeyLoggingInspector
+
+      await fillForms(page);
 
       let subDomainLinks = [];
       if (getSubdomain(output.uri_dest) !== "www") {
@@ -304,26 +325,27 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
       for (const link of output.browsing_history.slice(1)) {
         logger.log("info", `browsing now to ${link}`, { type: "Browser" });
         if (didBrowserDisconnect) {
-          return {
-            status: "failed",
-            page_response: "Chrome crashed",
-          };
+          reject(0);
         }
         await page.goto(link, {
-          timeout: defaultTimeout,
+          timeout: timeout,
           waitUntil: "networkidle2",
         });
 
-      // Fill the form to be able to check for keyloggers from setupKeyLoggingInspector
+        await fillForms(page);
+        await page.waitFor(800);
+        pageIndex++;
+        duplicatedLinks = duplicatedLinks.concat(await getLinks(page));
+        await autoScroll(page);
+      }
 
-      await fillForms(page);
       // ...
     } catch (e) {
       throw new Error(e);
     } finally {
       setTimeout(async () => {
         try {
-        extract.title = await page.title(); // page._frameManager._mainFrame.evaluate(() => document.title)
+          extract.title = await page.title(); // page._frameManager._mainFrame.evaluate(() => document.title)
           extract.timing.metrics = await page.metrics(); // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#pagemetrics
 
           extract.content.readability = await page.evaluate(`
@@ -340,8 +362,65 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
           await browser.close();
 
           console.log(">>> Browser tab closed: " + url);
-
           _callBacks['browser-tab-closed']();
+
+          // Reset of logged event data
+
+          let event_data_all = [];
+
+          await new Promise(done => {
+            logger.query(
+              {
+                start: 0,
+                order: "desc",
+                limit: Infinity,
+                fields: ["message"],
+              },
+              (err, results) => {
+                if (err) {
+                  // tslint:disable-next-line:no-console
+                  console.log(`Couldnt load event data ${JSON.stringify(err)}`);
+                  return done([]);
+                }
+
+                return done(results.file);
+              },
+            );
+          }).then((r: any) => {
+            event_data_all = r;
+          });
+
+          if (!Array.isArray(event_data_all)) {
+            reject("Couldnt load event data");
+          }
+          if (event_data_all.length < 1) {
+            reject("Couldnt load event data");
+          }
+
+          const event_data = event_data_all.filter(event => {
+            return !!event.message.type;
+          });
+
+          const blTests = [
+            "behaviour_event_listeners",
+            "canvas_fingerprinters",
+            "canvas_font_fingerprinters"
+          ];
+
+          const reports = blTests.reduce((acc, cur) => {
+            acc[cur] = generateReport(
+              cur,
+              event_data,
+              '',
+              REDIRECTED_FIRST_PARTY.domain,
+            );
+            return acc;
+          }, {});
+
+          console.log(reports);
+
+          process.exit();
+
           _callBacks['browser-extract-data'](extract);
 
           resolve(1);

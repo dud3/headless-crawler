@@ -1,4 +1,4 @@
-import { BlacklightEvent, JsInstrumentEvent } from "./types";
+import { ExtractorEvent, JsInstrumentEvent } from "./types";
 
 /**
  *  @fileOverview Utility functions for canvas finerprinting analysis.
@@ -54,7 +54,7 @@ type CanvasCallMap = Map<ScriptUrl, Set<CanvasCallValue>>;
  * @param canvasCalls
  * @see {@link http://randomwalker.info/publications/OpenWPM_1_million_site_tracking_measurement.pdf#page=12}
  */
-export const sortCanvasCalls = (canvasCalls: BlacklightEvent[]) => {
+export const sortCanvasCalls = (canvasCalls: ExtractorEvent[]) => {
   const CANVAS_READ_FUNCS = [
     "HTMLCanvasElement.toDataURL",
     "CanvasRenderingContext2D.getImageData",
