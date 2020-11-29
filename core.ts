@@ -276,13 +276,6 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
       });
       pageIndex++;
 
-      /*
-        const page2 = await browser.newPage();
-        await page2.goto('https://cnn.com', { waitUntil: 'networkidle2' });
-        await page2.bringToFront();
-        await page2.close();
-      */
-
       // Off event listeners
 
       page.off("response", addResponseSize);
@@ -290,18 +283,6 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
       // Requests
 
       extract.requests.amount = extract.requests.data.length;
-
-      // Browser
-
-      extract.browser = {
-        name: "Chromium",
-        version: await browser.version(),
-        user_agent: await browser.userAgent(),
-        platform: {
-          name: os.type(),
-          version: os.release(),
-        },
-      };
 
       // Timing
 
@@ -366,102 +347,91 @@ async function main (url: string, callBacks: Record<string, any>, timeout?: numb
         pageIndex++;
         duplicatedLinks = duplicatedLinks.concat(await getLinks(page));
         await autoScroll(page);
-      }
-
-      // ...
+      }f
     } catch (e) {
       throw new Error(e);
     } finally {
-      setTimeout(async () => {
-        try {
-          extract.title = await page.title(); // page._frameManager._mainFrame.evaluate(() => document.title)
-          extract.timing.metrics = await page.metrics(); // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#pagemetrics
+      try {
+        extract.title = await page.title(); // page._frameManager._mainFrame.evaluate(() => document.title)
+        extract.timing.metrics = await page.metrics(); // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#pagemetrics
 
-          extract.content.readability = await page.evaluate(`
-            (function(){
-              ${readabilityStr}
-              ${rexecutor}
-              return rexecutor();
-            }())
-          `);
+        extract.content.readability = await page.evaluate(`
+          (function(){
+            ${readabilityStr}
+            ${rexecutor}
+            return rexecutor();
+          }())
+        `);
 
-          extract.content.keywords.newsletter = extract.content.readability.content == undefined ? false : extract.content.readability.content.toLowerCase().indexOf('newsletter') > -1
+        extract.content.keywords.newsletter = extract.content.readability.content == undefined ? false : extract.content.readability.content.toLowerCase().indexOf('newsletter') > -1
 
-          await page.close();
-          await browser.close();
+        await page.close();
+        await browser.close();
 
-          console.log(">>> Browser tab closed: " + url);
-          _callBacks['browser-tab-closed']();
+        console.log(">>> Browser tab closed: " + url);
+        _callBacks['browser-tab-closed']();
 
-          // Reset of logged event data
+        // Reset of logged event data
 
-          let event_data_all = [];
+        let event_data_all = [];
 
-          await new Promise(done => {
-            logger.query(
-              {
-                start: 0,
-                order: "desc",
-                limit: Infinity,
-                fields: ["message"],
-              },
-              (err, results) => {
-                if (err) {
-                  // tslint:disable-next-line:no-console
-                  console.log(`Couldnt load event data ${JSON.stringify(err)}`);
-                  return done([]);
-                }
+        await new Promise(done => {
+          logger.query(
+            {
+              start: 0,
+              order: "desc",
+              limit: Infinity,
+              fields: ["message"],
+            },
+            (err, results) => {
+              if (err) {
+                // tslint:disable-next-line:no-console
+                console.log(`Couldnt load event data ${JSON.stringify(err)}`);
+                return done([]);
+              }
 
-                return done(results.file);
-              },
-            );
-          }).then((r: any) => {
-            event_data_all = r;
+              return done(results.file);
+            },
+          );
+        }).then((r: any) => {
+          event_data_all = r;
 
-            if (!Array.isArray(event_data_all)) {
-              reject("Couldnt load event data");
-            }
-            if (event_data_all.length < 1) {
-              reject("Couldnt load event data");
-            }
+          if (!Array.isArray(event_data_all)) {
+            reject("Couldnt load event data");
+          }
+          if (event_data_all.length < 1) {
+            reject("Couldnt load event data");
+          }
 
-            const event_data = event_data_all.filter(event => {
-              return !!event.message.type;
-            });
-
-            const blTests = [
-              "behaviour_event_listeners",
-              "canvas_fingerprinters",
-              "canvas_font_fingerprinters"
-            ];
-
-            console.log(REDIRECTED_FIRST_PARTY.domain);
-
-            const reports = blTests.reduce((acc, cur) => {
-              acc[cur] = generateReport(
-                cur,
-                event_data,
-                '',
-                REDIRECTED_FIRST_PARTY.domain,
-              );
-              return acc;
-            }, {});
-
-            extract.reports = reports;
-
-            const json_dump = JSON.stringify({ reports }, null, 2);
-            writeFileSync(path.join(outDir, "inspection.json"), json_dump);
-
-            _callBacks['browser-extract-data'](extract);
+          const event_data = event_data_all.filter(event => {
+            return !!event.message.type;
           });
 
-          resolve(1);
+          const blTests = [
+            "behaviour_event_listeners",
+            "canvas_fingerprinters",
+            "canvas_font_fingerprinters"
+          ];
 
-          // ...
-        } catch (e) {
-          throw new Error(e);
-        }
-      }, timeout);
+          const reports = blTests.reduce((acc, cur) => {
+            acc[cur] = generateReport(
+              cur,
+              event_data,
+              '',
+              REDIRECTED_FIRST_PARTY.domain,
+            );
+            return acc;
+          }, {});
+
+          extract.reports = reports;
+
+          _callBacks['browser-extract-data'](extract);
+        });
+
+        resolve(1);
+      } catch (e) {
+        throw new Error(e);
+      }
     }
   });
 }

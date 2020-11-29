@@ -1,15 +1,17 @@
 import core from "./core";
+import readability from "./readability";
 
 let url: string = process.argv.length > 2 ? process.argv[2] : '';
 
-if (url.length == 0) { console.log('The url param is missing, usage: yarn shell https://example.com'); process.exit(); }
+// if (url.length == 0) { console.log('The url param is missing, usage: yarn shell https://example.com'); process.exit(); }
 
 (async () => {
+	/*
 	let blocked: Array<any> = [];
 	let thextract: any = {};
 
 	const cbs: Record<string, any> = {
-	    'request-blocked': (request: any) => { blocked.push(request); /* console.log(request.url); */ },
+	    'request-blocked': (request: any) => { blocked.push(request); },
 	    'script-injected': (script: string, url: string) => { console.log(script, url); },
 	    'browser-extract-data': (extract: any) => { thextract = extract; }
 	}
@@ -21,4 +23,38 @@ if (url.length == 0) { console.log('The url param is missing, usage: yarn shell 
 	thextract.blocked.amount = thextract.blocked.data.length;
 
 	console.log(thextract);
+	*/
+
+	const arr = [
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com'
+	];
+	readability.main(arr, true).then((extracts) => {
+		console.log(extracts);
+	});
 })();
