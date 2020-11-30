@@ -2,7 +2,7 @@ import { readFileSync } from 'fs';
 import { promises as fs } from 'fs';
 import fetch from 'node-fetch';
 
-import puppeteer, { Browser, LoadEvent, Page } from "puppeteer";
+import puppeteer, { LoadEvent, Page } from "puppeteer";
 import { fullLists, PuppeteerBlocker, Request } from '@cliqz/adblocker-puppeteer';
 
 const readabilityStr = readFileSync('node_modules/@mozilla/readability/Readability.js', {encoding: 'utf-8'})

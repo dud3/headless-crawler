@@ -146,7 +146,6 @@ async function main (urls: Array<string>, callBacks: Record<string, any>, timeou
 
         const outDir = path.join(process.cwd(), "extract-dir");
         const outFilePath = path.join(outDir, FIRST_PARTY.domainWithoutSuffix) + ".ndjson";
-
         const logger = getLogger({ outDir, outFile: FIRST_PARTY.domainWithoutSuffix + ".ndjson", quiet: true });
 
         tabs.push(browser.newPage().then(async page => {

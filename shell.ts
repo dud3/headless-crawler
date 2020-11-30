@@ -3,7 +3,17 @@ import readability from "./readability";
 
 let fun: string = process.argv.length > 2 ? process.argv[2] : 'readability';
 
+import Browser from './Browser';
+
 (async () => {
+	const browser = new Browser(false);
+	await browser.launch();
+
+	await browser.goto(['https://google.com', 'https://google.com', 'https://google.com', 'https://google.com', 'https://google.com']);
+
+	// const tabs = await browser.tabs();
+	// console.log(tabs.length);
+
 	if (fun == 'extract') {
 		let url: string = process.argv.length > 3 ? process.argv[3] : '';
 		if (url.length == 0) { console.log('The url param is missing, usage: yarn shell https://example.com'); process.exit(); }
