@@ -1,60 +1,78 @@
 import core from "./core";
 import readability from "./readability";
 
-let url: string = process.argv.length > 2 ? process.argv[2] : '';
-
-// if (url.length == 0) { console.log('The url param is missing, usage: yarn shell https://example.com'); process.exit(); }
+let fun: string = process.argv.length > 2 ? process.argv[2] : 'readability';
 
 (async () => {
-	/*
-	let blocked: Array<any> = [];
-	let thextract: any = {};
+	if (fun == 'extract') {
+		let url: string = process.argv.length > 3 ? process.argv[3] : '';
+		if (url.length == 0) { console.log('The url param is missing, usage: yarn shell https://example.com'); process.exit(); }
 
-	const cbs: Record<string, any> = {
-	    'request-blocked': (request: any) => { blocked.push(request); },
-	    'script-injected': (script: string, url: string) => { console.log(script, url); },
-	    'browser-extract-data': (extract: any) => { thextract = extract; }
+		let blocked: Array<any> = [];
+		let thextract: any = {};
+
+		const cbs: Record<string, any> = {
+		    'request-blocked': (request: any) => { blocked.push(request); },
+		    'script-injected': (script: string, url: string) => { console.log(script, url); },
+		    'browser-extract-data': (extract: any) => { thextract = extract; }
+		}
+
+		await core.main([url], cbs, 8000, false);
+
+		thextract.blocked = {} as any;
+		thextract.blocked.data = blocked.map(b => { return { tabId: b.tabId, type: b.type, url: b.url } });
+		thextract.blocked.amount = thextract.blocked.data.length;
+
+		console.log(thextract);
+	} else {
+		const arr = [
+			'https://google.com', 'https://google.com', 'https://google.com', 'https://google.com', 'https://google.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			//'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com'
+
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
+			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com'
+		];
+		await readability.main(arr, false).then((extracts) => {
+			console.log(extracts);
+		});
 	}
-
-	await core.main(url, cbs, 30000, true);
-
-	thextract.blocked = {} as any;
-	thextract.blocked.data = blocked.map(b => { return { tabId: b.tabId, type: b.type, url: b.url } });
-	thextract.blocked.amount = thextract.blocked.data.length;
-
-	console.log(thextract);
-	*/
-
-	const arr = [
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
-		'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com'
-	];
-	readability.main(arr, true).then((extracts) => {
-		console.log(extracts);
-	});
 })();

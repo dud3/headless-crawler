@@ -5,7 +5,7 @@ setGracefulCleanup();
 // https://stackoverflow.com/a/45211015/1407622
 import { createLogger, format, transports } from "winston";
 
-export const getLogger = ({ outDir = "", quiet = false }) => {
+export const getLogger = ({ outDir = "", outFile = "inspection-log.ndjson", quiet = false }) => {
   const log_transports = [];
   let filename;
 
@@ -16,9 +16,7 @@ export const getLogger = ({ outDir = "", quiet = false }) => {
     }),
   );
 
-  filename = outDir
-    ? path.join(outDir, "inspection-log.ndjson")
-    : tmpNameSync({ postfix: "-log.ndjson" });
+  filename = path.join(outDir, outFile);
 
   log_transports.push(
     new transports.File({

@@ -36,6 +36,10 @@ export const clearDir = (outDir, mkNewDir = true) => {
   }
 };
 
+export const clearFile = (path: string) => {
+  fs.unlinkSync(path);
+};
+
 export const loadJSONSafely = str => {
   try {
     return JSON.parse(str);

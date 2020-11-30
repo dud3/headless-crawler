@@ -8,23 +8,6 @@ import { fullLists, PuppeteerBlocker, Request } from '@cliqz/adblocker-puppeteer
 const readabilityStr = readFileSync('node_modules/@mozilla/readability/Readability.js', {encoding: 'utf-8'})
 const { Readability } = require('@mozilla/readability');
 
-/*
-const puppeteer = require('puppeteer');
-
-puppeteer.launch().then(async browser => {
-  const promises=[];
-  for(let i = 0; i < 10; i++){
-    console.log('Page ID Spawned', i)
-    promises.push(browser.newPage().then(async page => {
-      await page.goto('https://www.example.com/');
-      await page.screenshot({path: '../images/result' + i + '.png'});
-    }))
-  }
-  await Promise.all(promises)
-  browser.close();
-});
-*/
-
 function rexecutor() {
   return new Readability({}, document).parse();
 }
@@ -51,8 +34,6 @@ async function main (urls: Array<string>, headless: boolean, callBacks?: Record<
       },
     );
 
-    console.log(urls);
-
     const extracts = [];
 
     // const deviceOptions = puppeteer.devices['iPhone X'];
@@ -76,6 +57,7 @@ async function main (urls: Array<string>, headless: boolean, callBacks?: Record<
         promises.push(browser.newPage().then(async page => {
           await blocker.enableBlockingInPage(page);
           await page.goto(urls[key], { timeout: 0 });
+          await page.bringToFront();
 
           const read = await page.evaluate(`
             (function(){
