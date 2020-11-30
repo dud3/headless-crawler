@@ -1,4 +1,6 @@
 import core from "./core";
+import readability from "./readability";
+
 import * as path from "path";
 
 const port = 3001
@@ -32,13 +34,21 @@ app.post('/url', async function (req: any, res: any) {
       'browser-extract-data': (extract: any) => { thextract = extract; }
   }
 
-  await core.main(req.body.url, cbs, 8000, true);
+  await core.main([req.body.url], cbs, 8000, true);
 
   thextract.blocked = {} as any;
   thextract.blocked.data = blocked.map(b => { return { tabId: b.tabId, type: b.type, url: b.url } });
   thextract.blocked.amount = thextract.blocked.data.length;
 
   res.json(thextract);
+});
+
+// todo: remove me
+
+app.post('/extractor/readability', async function (req: any, res: any) {
+  await readability.main([req.body.url], true).then((extracts) => {
+    res.json(extracts);
+  });
 });
 
 http.listen(port, function() {
