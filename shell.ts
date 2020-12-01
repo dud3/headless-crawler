@@ -11,6 +11,8 @@ import Browser from './Browser';
 
 	await browser.goto(['https://google.com', 'https://google.com', 'https://google.com', 'https://google.com', 'https://google.com']);
 
+	await browser.invokeTabs();
+
 	// const tabs = await browser.tabs();
 	// console.log(tabs.length);
 
@@ -36,7 +38,7 @@ import Browser from './Browser';
 		console.log(thextract);
 	} else {
 		const arr = [
-			'https://google.com', 'https://google.com', 'https://google.com', 'https://google.com', 'https://google.com',
+			'https://edition.cnn.com/2020/11/30/politics/navy-uss-bonhomme-scrap/index.html',
 			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
 			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',
 			// 'https://google.com', 'https://gamasutra.com', 'https://cnn.com', 'https://amazon.com', 'https://digitalocean.com',

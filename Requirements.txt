@@ -1,0 +1,9 @@
+//
+// Change the response to metrics first, nubers and booleans
+// Add the bypass plugin
+// block the videos, images... with ublock origin or other...
+// Find the optimal config for manager (instance chrome to tabs), hard-code it
+// Qeuue
+// Api
+// Db store the reponses
+//

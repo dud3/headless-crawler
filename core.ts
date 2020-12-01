@@ -397,11 +397,11 @@ async function main (urls: Array<string>, callBacks: Record<string, any>, timeou
             });
 
             const blTests = [
-              "behaviour_event_listeners",
               "canvas_fingerprinters",
               "canvas_font_fingerprinters",
               "key_logging",
-              "session_recorders"
+              "session_recorders",
+              "behaviour_event_listeners"
             ];
 
             const reports = blTests.reduce((acc, cur) => {

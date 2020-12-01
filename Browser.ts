@@ -8,7 +8,7 @@ class Browser {
     device: Object;
     blocker: PuppeteerBlocker;
     headless: boolean;
-    tabs: Array<Promise<any>>;
+    tabs: Array<Promise<any>> = [];
 
     constructor (headless) {
         this.headless = headless;
@@ -52,6 +52,10 @@ class Browser {
                 await page.goto(url);
             }));
         })
+    }
+
+    async invokeTabs () {
+        await Promise.all(this.tabs)
     }
 
     getTabs () {
