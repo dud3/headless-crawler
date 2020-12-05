@@ -25,9 +25,9 @@ app.use(bodyParser.raw());
 // Browser instances
 
 (async () => {
-  const browser = new Browser('x', false, 600, 200);
+  const browser = new Browser('x', true, 600, 200);
   await browser.launch();
-  await browser.newPages(4);
+  await browser.newPages(20);
 
   app.get('/', function (req: any, res: any) {
     res.send("The rest api layer of the extractor, api docs coming soon...");
