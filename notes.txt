@@ -1,5 +1,4 @@
 # Open 3000+ ports
-
 	It seems you haven’t opened port 3000 for external use. You’ll need to open it in order for you to be able to reach your application on the said port.
 
 	If you are using UFW, you can execute
@@ -7,3 +6,42 @@
 
 	If you are using only IPtables, you can execute
 		iptables -A INPUT -i eth0 -p tcp -m tcp --dport 3000 -j ACCEPT
+
+# pm2
+	For ts-node process managements we need to install the pm2 module with typescript support and ts-node
+		https://dev.to/boobo94/how-to-deploy-node-js-app-with-pm2-in-production-4207
+	
+	# Sample
+	
+	    "apps": [
+		{
+		    "name": "web",
+		    "exec_mode": "cluster",
+		    "instances": "max",
+		    "script": "./lib/server.ts",
+		    "interpreter": "ts-node",
+		    "env": {
+			"ENV": "prod",
+			"PORT": 3000,
+			"DB_USERNAME": "boobo94_username",
+			"DB_PASSWORD": "123",
+			"DB_NAME": "some_db_name",
+			"DB_HOST": "127.0.0.1",
+			"DB_DIALECT": "postgres",
+			"DB_PORT": 5432,
+			"SECRET_KEY": "boobo94_is_my_secret_key",
+		    }
+		}
+	    ]
+	
+	# Prerequested
+		npm & node
+		PM2 npm i -g pm2
+		Typescript npm install -g typescript
+		PostgreSQL installed
+		
+	# How to run it
+		pm2 install typescript
+		pm2 install @types/node
+		pm2 start pm2.json
+		The name of the web service is web under pm2 manager.
