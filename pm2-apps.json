@@ -2,11 +2,11 @@
   "apps": [
     {
       "name": "client-server",
-      "script": "./client-server.js"
+      "script": "./client-server.ts"
     },
     {
       "name": "http",
-      "script": "./http.js"
+      "script": "./http.ts"
     }
   ]
 }
