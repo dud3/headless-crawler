@@ -9,11 +9,6 @@ import * as url from "url";
 import os from "os";
 import { getDomain, getSubdomain, parse } from "tldts";
 
-// Use the js str to pass it to the puppeteer evaluation scope
-
-const readabilityStr = readFileSync('node_modules/@mozilla/readability/Readability.js', {encoding: 'utf-8'})
-const { Readability } = require('@mozilla/readability');
-
 // Extensions
 import {
   captureBrowserCookies,
@@ -29,10 +24,6 @@ import { setupBlacklightInspector } from "./inspector";
 import { setupSessionRecordingInspector } from "./session-recording";
 import { setupKeyLoggingInspector } from "./key-logging";
 import { clearDir, clearFile } from "./utils";
-
-function rexecutor() {
-  return new Readability({}, document).parse();
-}
 
 async function main (urls: Array<string>, callBacks: Record<string, any>, timeout?: number, headless?: boolean, numPages?: number) {
   timeout = timeout || 4000;
@@ -55,12 +46,6 @@ async function main (urls: Array<string>, callBacks: Record<string, any>, timeou
     // },
     // inspectors: {},
     // keyLoggers: {},
-    content: {
-      // readability: {} as any,
-      keywords: {
-        newsletter: false
-      }
-    },
     // browser: {},
     reports: {}
   };
@@ -338,21 +323,6 @@ async function main (urls: Array<string>, callBacks: Record<string, any>, timeou
 
           extract.title = await page.title(); // page._frameManager._mainFrame.evaluate(() => document.title)
           extract.timing.metrics = await page.metrics(); // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#pagemetrics
-
-          /*
-            extract.content.readability = await page.evaluate(`
-              (function(){
-                ${readabilityStr}
-                ${rexecutor}
-                return rexecutor();
-              }())
-            `);
-
-          extract.content.keywords.newsletter =
-            extract.content.readability.content == undefined
-            ? false
-            : extract.content.readability.content.toLowerCase().indexOf('newsletter') > -1
-          */
 
           await page.close();
 
