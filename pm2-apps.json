@@ -1,0 +1,14 @@
+{
+  "apps": [
+    {
+      "name": "client-server",
+      "script": "./client-server.ts",
+      "interpreter": "ts-node"
+    },
+    {
+      "name": "http",
+      "script": "./http.ts",
+      "interpreter": "ts-node"
+    }
+  ]
+}
