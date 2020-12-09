@@ -1,99 +1,138 @@
-import puppeteer, { LoadEvent, Page } from "puppeteer";
+import puppeteer, { LoadEvent, Page, EmulateOptions } from "puppeteer";
 import { fullLists, PuppeteerBlocker, Request } from '@cliqz/adblocker-puppeteer';
 import { promises as fs } from 'fs';
 import fetch from 'node-fetch';
 
-class Npage {
-    index: number;
-    page: Page;
-    url: string;
+export class Npage {
+  index: Number;
+  page: Page;
+  blocker?: PuppeteerBlocker;
+  url: string;
+}
+
+export class Config {
+  id: string;
+  device: EmulateOptions;
+  headless: boolean;
+  width: Number;
+  height: Number;
+  extensions: Array<string>;
 }
 
 class Browser {
-    id: String;
-    browser: puppeteer.Browser;
-    device: Object;
-    blocker: PuppeteerBlocker;
-    headless: boolean;
-    pages: Array<Promise<Npage>> = [];
-    rpages: Array<Npage> = [];
-    width: Number;
-    height: Number;
+  id: string;
+  browser: puppeteer.Browser;
+  device: EmulateOptions;
+  headless: boolean;
+  pages: Array<Promise<Npage>> = [];
+  rpages: Array<Npage> = [];
+  width: Number;
+  height: Number;
+  blocker: Boolean;
+  block: Array<"blockMedias" | "blockImages" | "blockStyles" | "blockFonts"> = [];
+  chromeArgs: Array<string> = [];
 
-    constructor (id, headless, width, height) {
-        this.id = id;
-        this.headless = headless;
-        this.width = width;
-        this.height = height;
+  constructor ({
+    id = 'x',
+    device = puppeteer.devices["iPhone X"],
+    headless = false,
+    width = 1200,
+    height = 600,
+    blocker = false,
+    block = [],
+    chromeArgs = []
+  }) {
+    this.id = id;
+    this.headless = headless;
+    this.width = width;
+    this.height = height;
 
-        // this.device = puppeteer.devices['iPhone X'];
-        // page.emulate(deviceOptions);
-    }
+    this.device = device;
+    this.chromeArgs = chromeArgs;
+    this.blocker = blocker;
+  }
 
-    async launch () {
-        this.blocker = await PuppeteerBlocker.fromLists(
-          fetch,
-          fullLists,
-          {
-            enableCompression: true,
-          },
-          {
-            path: 'engine.bin',
-            read: fs.readFile,
-            write: fs.writeFile,
-          },
-        );
+  async launch () {
+    const args = [
+      "--no-sandbox",
+      "--disable-dev-shm-usage",
+      "--ignore-certificate-errors",
+      "--autoplay-policy=no-user-gesture-required",
+      `--window-size=${this.width},${this.height}`
+    ];
 
-        this.browser = await puppeteer.launch({
-          args: [
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-            "--ignore-certificate-errors",
-            "--autoplay-policy=no-user-gesture-required",
-            "--disable-extensions-except=/home/dud3/Downloads/bypass-paywalls-chrome-clean-master",
-            "--load-extension=/home/dud3/Downloads/bypass-paywalls-chrome-clean-master",
-            `--window-size=${this.width},${this.height}`
-          ],
-          defaultViewport: null,
-          headless: this.headless
-        });
-    }
+    this.chromeArgs.map(e => { args.push(e) });
 
-    async newPages (amount) {
-        const promisses = [];
-        for (let i = 0; i < amount; i++) {
-            promisses.push(new Promise<Npage>(async (resolve) => {
-                const page = await this.browser.newPage();
-                await this.blocker.enableBlockingInPage(page);
-                await this.blocker.blockMedias().blockImages().blockStyles().blockFonts();
+    this.browser = await puppeteer.launch({
+      args,
+      defaultViewport: null,
+      headless: this.headless
+    });
+  }
 
-                resolve({ index: i, page, url: '' });
-            }));
-        }
+  async newPages (amount) {
+      const promisses = [];
+      for (let i = 0; i < amount; i++) {
+          promisses.push(new Promise<Npage>(async (resolve) => {
+              const instance: Npage = new Npage();
+              const page = await this.browser.newPage();
 
-        const pages = await Promise.all(promisses);
+              page.setDefaultTimeout(0);
+              page.emulate(this.device);
 
-        pages.map(p => { this.rpages.push(p); });
-    }
+              if (this.blocker) {
+                instance.blocker = await this.getBlocker();
+                await instance.blocker.enableBlockingInPage(page);
 
-    async assignPages (urls) {
-        for (let i = 0; i < urls.length; i++) { this.rpages[i].url = urls[i]; }
+                await (this.block.map(e => { instance.blocker[e](); }));
+              }
 
-        return this.rpages;
-    }
+              instance.index = i;
+              instance.page = page;
+              instance.url = '';
 
-    get () {
-        return this.browser;
-    }
+              resolve(instance);
+          }));
+      }
 
-    async close (page) {
-        this.rpages.splice(0, 1);
-        await page.close();
-    }
+      const pages = await Promise.all(promisses);
 
-    exit () {
-        this.browser.close();
-    }
+      pages.map(p => { this.rpages.push(p); });
+  }
+
+  async assignPages (urls) {
+      for (let i = 0; i < urls.length; i++) { this.rpages[i].url = urls[i]; }
+
+      return this.rpages;
+  }
+
+  get () {
+      return this.browser;
+  }
+
+  async close (page) {
+      this.rpages.splice(0, 1);
+      await page.close();
+  }
+
+  exit () {
+      this.browser.close();
+  }
+
+  async getBlocker () {
+      return await PuppeteerBlocker.fromLists(
+        fetch,
+        fullLists,
+        {
+          enableCompression: true,
+        },
+        {
+          path: 'engine.bin',
+          read: fs.readFile,
+          write: fs.writeFile,
+        },
+      );
+  }
 }
 
 export default Browser;
