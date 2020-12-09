@@ -204,13 +204,14 @@ const urls = [
 
   const now = Date.now();
 
-  for (let i = 0; i < urls.length - 10; i += 10) {
-	  const promisses = await prepare(urls.slice(i, i + 10));
+  const iter = 20;
+  for (let i = 0; i < urls.length - iter; i += iter) {
+	  const promisses = await prepare(urls.slice(i, i + iter));
 
 		const fps = promisses.map(p => p());
 	  const npages: Array<Npage> = await Promise.all(fps);
 
-		console.log("Crawled current 10 tabs: " + Math.floor((Date.now() - now) / 1000) + "sec");
+		console.log(`Crawled current ${iter} tabs: ` + Math.floor((Date.now() - now) / 1000) + "sec");
 
 		// console.log(npages.length);
 		// npages.map(async (n) => { await browser.close(n.page); });
