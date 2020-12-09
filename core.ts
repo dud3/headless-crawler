@@ -31,8 +31,7 @@ function rexecutor() {
   return new Readability({}, document).parse();
 }
 
-export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeout?: number, numPages?: number) => {
-  timeout = timeout || 80000;
+export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeout: number = 0, numPages?: number) => {
   numPages = numPages || 3;
 
   const defaultWaitUntil = "networkidle0"; // networkidle2, networkidle0, load, domcontentloaded
@@ -71,9 +70,6 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
       third_party: new Set(),
     },
   };
-
-  console.log(`>>> Url: ${url}`);
-  console.log(`>>> Timeout (tab will be closed in): ${timeout}ms`);
 
   const output: any = {
     uri_ins: url,
@@ -193,10 +189,14 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
 
   // Page response
 
-  await page.goto(url, {
-    timeout: timeout,
-    waitUntil: defaultWaitUntil
-  });
+  try {
+    await page.goto(url, {
+      timeout: timeout,
+      waitUntil: defaultWaitUntil
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
   // await page.waitForTimeout(timeout);
 
   // Url
