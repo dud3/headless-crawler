@@ -10,7 +10,7 @@ function rexecutor() {
   return new Readability({}, document).parse();
 }
 
-async function main (page: { page: Page; url: string }) {
+async function main (page: { page: Page, url: string }) {
   await page.page.goto(page.url, { timeout: 0, waitUntil: 'domcontentloaded' });
 
   const read = await page.page.evaluate(`

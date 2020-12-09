@@ -25,7 +25,14 @@ app.use(bodyParser.raw());
 // Browser instances
 
 (async () => {
-  const browser = new Browser('x', true, 600, 200);
+  const browser = new Browser({
+    id: 'xs',
+    blocker: true,
+    block: ["blockMedias", "blockImages", "blockStyles", "blockFonts"],
+    chromeArgs: [
+    "--disable-extensions-except=/home/dud3/git/headless-crawler/extension/bypass-paywalls-chrome-clean",
+    "--load-extension=/home/dud3/git/headless-crawler/extension/bypass-paywalls-chrome-clean"
+  ]});
   await browser.launch();
   await browser.newPages(20);
 
@@ -37,13 +44,7 @@ app.use(bodyParser.raw());
     let blocked: Array<any> = [];
     let thextract: any = {};
 
-    const cbs: Record<string, any> = {
-        'request-blocked': (request: any) => { blocked.push(request); /* console.log(request.url); */ },
-        'script-injected': (script: string, url: string) => { /* console.log(script, url); */ },
-        'browser-extract-data': (extract: any) => { thextract = extract; }
-    }
-
-    await core.main([req.body.url], cbs, 8000, true);
+    await core([req.body.url], 30000, true);
 
     // todo: remove me
 

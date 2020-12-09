@@ -1,71 +1,40 @@
+const { addSlashes, stripSlashes } = require('slashes');
+
+import puppeteer, { LoadEvent, Page, EmulateOptions } from "puppeteer";
 import core from "./core";
 import readability from "./readability";
 
 let fun: string = process.argv.length > 2 ? process.argv[2] : 'readability';
 
-import Browser from './Browser';
+import Browser, { Npage } from './Browser';
+import dbSql from './db-sql';
 
-// ...
+// 'https://posterous.com', // failed
+// 'https://samaltman.com', // failed
+
 const urls = [
-'https://github.com',
-'https://nytimes.com',
-'https://techcrunch.com',
-'https://bloomberg.com',
-'https://github.io',
-'https://blogspot.com',
-'https://google.com',
-'https://arstechnica.com',
-'https://bbc.com',
-'https://theguardian.com',
-'https://wsj.com',
-'https://medium.com',
-'https://washingtonpost.com',
-'https://wordpress.com',
-'https://bbc.co.uk',
-'https://wired.com',
-'https://reuters.com',
-'https://mozilla.org',
-'https://theatlantic.com',
-'https://twitter.com',
-'https://npr.org',
 'https://newyorker.com',
-'https://economist.com',
-'https://wikipedia.org',
-'https://mit.edu',
-'https://eff.org',
-'https://nature.com',
-'https://tumblr.com',
-'https://nautil.us',
-'https://ycombinator.com',
-'https://apple.com',
-'https://arxiv.org',
-'https://amazon.com',
-'https://youtube.com',
-'https://vice.com',
-'https://microsoft.com',
 'https://stanford.edu',
 'https://theverge.com',
 'https://scientificamerican.com',
 'https://reddit.com',
 'https://latimes.com',
-// 'https://atlasobscura.com',
-// 'https://quantamagazine.org',
-// 'https://ieee.org',
-// 'https://lwn.net',
-// 'https://facebook.com',
-// 'https://forbes.com',
-// 'https://slate.com',
-// 'https://paulgraham.com',
-// 'https://anandtech.com',
-// 'https://googleblog.com',
-// 'https://posterous.com',
-// 'https://gnu.org',
-// 'https://qz.com',
-// 'https://samaltman.com',
-// 'https://smithsonianmag.com',
-// 'https://thenextweb.com',
-// 'https://cnn.com',
-// 'https://jacquesmattheij.com',
+'https://atlasobscura.com',
+'https://quantamagazine.org',
+'https://ieee.org',
+'https://lwn.net',
+'https://facebook.com',
+'https://forbes.com',
+'https://slate.com',
+'https://paulgraham.com',
+'https://anandtech.com',
+'https://googleblog.com',
+'https://gnu.org',
+'https://qz.com',
+'https://smithsonianmag.com',
+'https://thenextweb.com',
+'https://cnn.com',
+'https://jacquesmattheij.com',
 // 'https://cbc.ca',
 // 'https://cnbc.com',
 // 'https://37signals.com',
@@ -169,17 +138,83 @@ const urls = [
 // 'https://recode.net'
 ];
 
-// block images from loading
-// https://github.com/puppeteer/puppeteer/tree/main/examples#load-a-chrome-extension
-/*
-page.on('request', (request) => {
-	if (request.resourceType() === 'image') request.abort();
-	else request.continue();
-});
-*/
-
 (async () => {
-	const browser = new Browser('x', false, 600, 200);
+  console.log(urls);
+
+  const browser = new Browser({
+  	id: 'ys',
+  	blocker: true,
+  	chromeArgs: [
+		"--disable-extensions-except=/home/dud3/git/headless-crawler/extension/bypass-paywalls-chrome-clean",
+  	"--load-extension=/home/dud3/git/headless-crawler/extension/bypass-paywalls-chrome-clean"
+   ]});
+
+	await browser.launch();
+	await browser.newPages(32);
+
+	const pages: Array<Npage> = await browser.assignPages(urls);
+	const fpages: Array<Npage> = pages.filter(p => p.url.length > 0);
+
+	const promisses = [];
+	for (const key in fpages) {
+		promisses.push(() => (new Promise(async (resolve) => {
+			const theExtract: any = {
+				canvas_fingerprinters: {},
+				key_logging: {}
+			};
+
+			const extract = await core(fpages[key].blocker, fpages[key].page, fpages[key].url);
+
+			theExtract.canvas_fingerprinters = extract.reports.canvas_fingerprinters.fingerprinters.length;
+		  // theExtract.canvas_font_fingerprinters = Object.keys(extract.reports.canvas_font_fingerprinters.canvas_font).length;
+		  theExtract.key_logging = Object.keys(extract.reports.key_logging).length;
+		  theExtract.session_recorders = Object.keys(extract.reports.session_recorders).length;
+		  theExtract.blocked_amount = extract.blocked.length;
+
+		  const sql = `
+				insert into extracts set
+				url = '${extract.url}',
+				title = '${addSlashes(extract.title)}',
+				BlockedRequests = ${theExtract.blocked_amount},
+				totalRequests = ${extract.requests.amount},
+				CanvasFingerprint = ${theExtract.canvas_fingerprinters},
+				KeyLogging = ${theExtract.key_logging},
+				SessionRecording = ${theExtract.session_recorders},
+				TotalSize = ${extract.pageSize},
+				ContentSize = ${extract.readability.length},
+				ContentReaderable = 1,
+				LoadSpeed = ${extract.timing.loadTime}
+			`
+
+		  try {
+				await dbSql.query(sql, (err) => { if (err) throw err });
+			} catch(err) {
+				console.log(err.stack);
+			}
+
+			console.log("Resolved:", fpages[key].url);
+
+			await browser.close(fpages[key].page);
+			resolve(fpages[key]);
+		})));
+  }
+
+  setTimeout(async () => {
+  	const fps = promisses.map(p => p());
+	  const npages: Array<Npage> = await Promise.all(fps);
+
+  	// console.log(npages.length);
+  	// npages.map(async (n) => { await browser.close(n.page); });
+	}, 8000);
+
+	/*
+	const browser = new Browser({
+  	id: 'ys',
+  	blocker: true,
+  	chromeArgs: [
+		"--disable-extensions-except=/home/dud3/git/headless-crawler/extension/bypass-paywalls-chrome-clean",
+  	"--load-extension=/home/dud3/git/headless-crawler/extension/bypass-paywalls-chrome-clean"
+  ]});
 	await browser.launch();
 	await browser.newPages(4);
 
@@ -188,19 +223,20 @@ page.on('request', (request) => {
 
 	const promisses = [];
 	for (const key in fpages) {
-		promisses.push(new Promise(async (resolve) => {
+		promisses.push(() => (new Promise(async (resolve) => {
 			const extract = await readability.main(fpages[key]);
 
 			console.log(extract);
 
 			await browser.close(fpages[key].page);
 			await browser.newPages(1);
-		}));
+		})));
   }
 
   setTimeout(async () => {
-	  Promise.all(promisses);
+	  await Promise.all(promisses.map(p => p()));
 	}, 8000);
+	*/
 
 	/*
 	const now = Date.now();
