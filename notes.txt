@@ -1,3 +1,6 @@
+# Forever ts
+	forever start -c "yarn shell" ./
+
 # Open 3000+ ports
 	It seems you haven’t opened port 3000 for external use. You’ll need to open it in order for you to be able to reach your application on the said port.
 
