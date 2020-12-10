@@ -9,11 +9,8 @@ let fun: string = process.argv.length > 2 ? process.argv[2] : 'readability';
 import Browser, { Npage } from './Browser';
 import dbSql from './db-sql';
 
-const { urls } = require("./urls");
-
 (async () => {
   const browser = new Browser({ id: 'ys', blocker: true, headless: true });
-
 	await browser.launch();
 
 	const prepare = async (urls) => {
@@ -67,6 +64,9 @@ const { urls } = require("./urls");
 					console.log("Resolved:", fpages[key].url);
 
 					await browser.close(fpages[key].page);
+
+					dbSql.query(`update sites set crawled = 1 where url = '${fpages[key].url}'`);
+
 					resolve(fpages[key]);
 				} catch (err) {
 					console.log("failed: ", fpages[key].url);
@@ -81,25 +81,29 @@ const { urls } = require("./urls");
 
   const now = Date.now();
 
-  console.log(urls.length);
+ 	dbSql.query('select * from sites limit 50', async (err, rows) => {
+		if (err) throw err
 
-  const iter = 10;
-  for (let i = 0; i < urls.length - iter; i += iter) {
-  	const nowIter = Date.now();
-	  const promisses = await prepare(urls.slice(i, i + iter));
+		const urls = rows.map(row => row.url);
 
-	  console.log(`Fetching ${iter} more items...`);
+		console.log(urls);
 
-		const fps = promisses.map(p => p());
-	  const npages: Array<Npage> = await Promise.all(fps);
+	  const iter = 10;
+	  for (let i = 0; i < urls.length - iter; i += iter) {
+	  	const nowIter = Date.now();
+		  const promisses = await prepare(urls.slice(i, i + iter));
 
-		console.log(`Crawled current ${iter} tabs: ` + Math.floor((Date.now() - nowIter) / 1000) + "sec");
+		  console.log(`Fetching ${iter} more items...`);
 
-		// console.log(npages.length);
-		// npages.map(async (n) => { await browser.close(n.page); });
-	}
+			const fps = promisses.map(p => p());
+		  const npages: Array<Npage> = await Promise.all(fps);
 
-	console.log("Crawled in all: " + Math.floor((Date.now() - now) / 1000) + "sec");
+			console.log(`Crawled current ${iter} tabs: ` + Math.floor((Date.now() - nowIter) / 1000) + "sec");
+		}
+
+		console.log("Crawled in all: " + Math.floor((Date.now() - now) / 1000) + "sec");
+
+	});
 
 	/*
 	const browser = new Browser({
@@ -130,43 +134,5 @@ const { urls } = require("./urls");
   setTimeout(async () => {
 	  await Promise.all(promisses.map(p => p()));
 	}, 8000);
-	*/
-
-	/*
-	const now = Date.now();
-
-	const browsers = [];
-	const browsersi = 8;
-
-	for (let i = 0; i < browsersi; i++) {
-		const browser = new Browser('x', false, 600, 200);
-		await browser.launch();
-
-		browsers.push(browser);
-	}
-
-	let timer = 0;
-	let iter = urls.length / browsersi;
-
-	console.log(iter, urls.length);
-
-	let ii = 0;
-	const interval = setInterval(async () => {
-		timer += 1000;
-
-		if (timer >= 12000) {
-			clearInterval(interval);
-			for (const key in browsers) {
-				console.log(urls.slice(ii, iter + ii).length);
-
-				browsers[key].goto(urls.slice(ii, iter + ii));
-				browsers[key].invokeTabs();
-
-				ii += iter;
-			}
-		}
-
-		console.log(timer);
-	}, 1000);
 	*/
 })();
