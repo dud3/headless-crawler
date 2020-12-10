@@ -12,7 +12,7 @@ import dbSql from './db-sql';
 const { urls } = require("./urls");
 
 (async () => {
-  const browser = new Browser({ id: 'ys', blocker: true, headless: false });
+  const browser = new Browser({ id: 'ys', blocker: true, headless: true });
 
 	await browser.launch();
 
