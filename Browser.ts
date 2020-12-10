@@ -58,6 +58,7 @@ class Browser {
       "--disable-dev-shm-usage",
       "--ignore-certificate-errors",
       "--autoplay-policy=no-user-gesture-required",
+      // "--enable-resource-load-scheduler=false",
       `--window-size=${this.width},${this.height}`
     ];
 
