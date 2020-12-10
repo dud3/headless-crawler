@@ -9,137 +9,10 @@ let fun: string = process.argv.length > 2 ? process.argv[2] : 'readability';
 import Browser, { Npage } from './Browser';
 import dbSql from './db-sql';
 
-// 'https://posterous.com', // failed
-// 'https://samaltman.com', // failed
-
-const urls = [
-'https://newyorker.com',
-'https://stanford.edu',
-'https://theverge.com',
-'https://scientificamerican.com',
-'https://reddit.com',
-'https://latimes.com',
-'https://atlasobscura.com',
-'https://quantamagazine.org',
-'https://ieee.org',
-'https://lwn.net',
-'https://facebook.com',
-'https://forbes.com',
-'https://slate.com',
-'https://paulgraham.com',
-'https://anandtech.com',
-'https://googleblog.com',
-'https://gnu.org',
-'https://qz.com',
-'https://smithsonianmag.com',
-'https://thenextweb.com',
-'https://cnn.com',
-'https://jacquesmattheij.com',
-'https://cbc.ca',
-'https://cnbc.com',
-'https://37signals.com',
-'https://phys.org',
-'https://torrentfreak.com',
-'https://zdnet.com',
-'https://theregister.co.uk',
-'https://acm.org',
-'https://daringfireball.net',
-'https://stackoverflow.com',
-'https://stackexchange.com',
-'https://priceonomics.com',
-'https://nasa.gov',
-'https://businessinsider.com',
-'https://venturebeat.com',
-'https://righto.com',
-'https://cloudflare.com',
-'https://stripe.com',
-'https://rust-lang.org',
-'https://archive.org',
-'https://marco.org',
-'https://kalzumeus.com',
-'https://antirez.com',
-'https://techdirt.com',
-'https://technologyreview.com',
-'https://citylab.com',
-'https://codinghorror.com',
-'https://harvard.edu',
-'https://sciencemag.org',
-'https://vox.com',
-'https://msdn.com',
-'https://engadget.com',
-'https://nationalgeographic.com',
-'https://golang.org',
-'https://fastcompany.com',
-'https://avc.com',
-'https://berkeley.edu',
-'https://cnet.com',
-'https://aeon.co',
-'https://krebsonsecurity.com',
-'https://extremetech.com',
-'https://gitlab.com',
-'https://troyhunt.com',
-'https://jgc.org',
-'https://theintercept.com',
-'https://schneier.com',
-'https://buzzfeednews.com',
-'https://heroku.com',
-'https://dropbox.com',
-'https://danluu.com',
-'https://boingboing.net',
-'https://nih.gov',
-'https://gigaom.com',
-'https://sec.gov',
-'https://gamasutra.com',
-'https://yahoo.com',
-'https://nybooks.com',
-'https://chromium.org',
-'https://stratechery.com',
-'https://gizmodo.com',
-'https://rachelbythebay.com',
-'https://debian.org',
-'https://jvns.ca',
-'https://gabrielweinberg.com',
-'https://kickstarter.com',
-'https://steveblank.com',
-'https://daemonology.net',
-'https://sivers.org',
-'https://newscientist.com',
-'https://substack.com',
-'https://cmu.edu',
-'https://propublica.org',
-'https://blog.google',
-'https://typepad.com',
-'https://nymag.com',
-'https://chronicle.com',
-'https://hackaday.com',
-'https://businessweek.com',
-'https://openai.com'
-// 'https://tbray.org',
-// 'https://catonmat.net',
-// 'https://livejournal.com',
-// 'https://hbr.org',
-// 'https://openculture.com',
-// 'https://fb.com',
-// 'https://salon.com',
-// 'https://torproject.org',
-// 'https://mercurynews.com',
-// 'https://theparisreview.org',
-// 'https://netflix.com',
-// 'https://thedrive.com',
-// 'https://infoq.com',
-// 'https://marc.info',
-// 'https://time.com',
-// 'https://laphamsquarterly.org',
-// 'https://slideshare.net',
-// 'https://gwern.net',
-// 'https://python.org',
-// 'https://llvm.org',
-// 'https://pastebin.com',
-// 'https://recode.net'
-];
+const { urls } = require("./urls");
 
 (async () => {
-  const browser = new Browser({ id: 'ys', blocker: true, headless: true });
+  const browser = new Browser({ id: 'ys', blocker: true, headless: false });
 
 	await browser.launch();
 
@@ -148,6 +21,29 @@ const urls = [
 
 		const pages: Array<Npage> = await browser.assignPages(urls);
 		const fpages: Array<Npage> = pages.filter(p => p.url.length > 0);
+
+		const sql = async (theExtract, extract) => {
+			 const sql = `
+					insert into extracts set
+					url = '${extract.url}',
+					title = '${addSlashes(extract.title)}',
+					blockedRequests = ${theExtract.blocked_amount},
+					totalRequests = ${extract.requests.amount},
+					canvasFingerprint = ${theExtract.canvas_fingerprinters},
+					keyLogging = ${theExtract.key_logging},
+					sessionRecording = ${theExtract.session_recorders},
+					totalSize = ${extract.pageSize},
+					contentSize = ${extract.readability.length},
+					contentReaderable = 1,
+					loadSpeed = ${extract.timing.loadTime}
+				`
+
+			  try {
+					await dbSql.query(sql, (err) => { if (err) throw err });
+				} catch(err) {
+					console.log(err.stack);
+				}
+		}
 
 		const promisses = [];
 		for (const key in fpages) {
@@ -158,7 +54,7 @@ const urls = [
 				};
 
 				try {
-					const extract = await core(fpages[key].blocker, fpages[key].page, fpages[key].url, 30000);
+					const extract = await core(fpages[key].blocker, fpages[key].page, "https://" + fpages[key].url, 20000, 60000);
 
 					theExtract.canvas_fingerprinters = extract.reports.canvas_fingerprinters.fingerprinters.length;
 				  // theExtract.canvas_font_fingerprinters = Object.keys(extract.reports.canvas_font_fingerprinters.canvas_font).length;
@@ -166,26 +62,7 @@ const urls = [
 				  theExtract.session_recorders = Object.keys(extract.reports.session_recorders).length;
 				  theExtract.blocked_amount = extract.blocked.length;
 
-				  const sql = `
-						insert into extracts set
-						url = '${extract.url}',
-						title = '${addSlashes(extract.title)}',
-						BlockedRequests = ${theExtract.blocked_amount},
-						totalRequests = ${extract.requests.amount},
-						CanvasFingerprint = ${theExtract.canvas_fingerprinters},
-						KeyLogging = ${theExtract.key_logging},
-						SessionRecording = ${theExtract.session_recorders},
-						TotalSize = ${extract.pageSize},
-						ContentSize = ${extract.readability.length},
-						ContentReaderable = 1,
-						LoadSpeed = ${extract.timing.loadTime}
-					`
-
-				  try {
-						await dbSql.query(sql, (err) => { if (err) throw err });
-					} catch(err) {
-						console.log(err.stack);
-					}
+				  await sql(theExtract, extract);
 
 					console.log("Resolved:", fpages[key].url);
 
@@ -204,14 +81,19 @@ const urls = [
 
   const now = Date.now();
 
-  const iter = 20;
+  console.log(urls.length);
+
+  const iter = 10;
   for (let i = 0; i < urls.length - iter; i += iter) {
+  	const nowIter = Date.now();
 	  const promisses = await prepare(urls.slice(i, i + iter));
+
+	  console.log(`Fetching ${iter} more items...`);
 
 		const fps = promisses.map(p => p());
 	  const npages: Array<Npage> = await Promise.all(fps);
 
-		console.log(`Crawled current ${iter} tabs: ` + Math.floor((Date.now() - now) / 1000) + "sec");
+		console.log(`Crawled current ${iter} tabs: ` + Math.floor((Date.now() - nowIter) / 1000) + "sec");
 
 		// console.log(npages.length);
 		// npages.map(async (n) => { await browser.close(n.page); });

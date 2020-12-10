@@ -30,11 +30,10 @@ const { Readability } = require('@mozilla/readability');
 function rexecutor() {
   return new Readability({}, document).parse();
 }
-
-export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeout: number = 0, numPages?: number) => {
+export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeout: number = 0, waitFor: number = 0, numPages?: number) => {
   numPages = numPages || 3;
 
-  const defaultWaitUntil = "networkidle0"; // networkidle2, networkidle0, load, domcontentloaded
+  const defaultWaitUntil = "domcontentloaded"; // networkidle2, networkidle0, load, domcontentloaded
 
   const extract = {
     url: '',
@@ -197,7 +196,7 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
   } catch (err) {
     throw new Error(err);
   }
-  // await page.waitForTimeout(timeout);
+  await page.waitForTimeout(waitFor);
 
   // Url
 
