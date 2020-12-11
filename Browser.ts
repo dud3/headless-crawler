@@ -24,8 +24,7 @@ class Browser {
   browser: puppeteer.Browser;
   device: EmulateOptions;
   headless: boolean;
-  pages: Array<Promise<Npage>> = [];
-  rpages: Array<Npage> = [];
+  pages: Array<Npage> = [];
   width: Number;
   height: Number;
   blocker: Boolean;
@@ -71,68 +70,68 @@ class Browser {
     });
   }
 
-  async newPages (amount) {
-      const promisses = [];
-      for (let i = 0; i < amount; i++) {
-          promisses.push(new Promise<Npage>(async (resolve) => {
-              const instance: Npage = new Npage();
-              const page = await this.browser.newPage();
-
-              page.setDefaultTimeout(0);
-              page.emulate(this.device);
-
-              if (this.blocker) {
-                instance.blocker = await this.getBlocker();
-                await instance.blocker.enableBlockingInPage(page);
-
-                await (this.block.map(e => { instance.blocker[e](); }));
-              }
-
-              instance.index = i;
-              instance.page = page;
-              instance.url = '';
-
-              resolve(instance);
-          }));
-      }
-
-      const pages = await Promise.all(promisses);
-
-      pages.map(p => { this.rpages.push(p); });
-  }
-
-  async assignPages (urls) {
-      for (let i = 0; i < urls.length; i++) { this.rpages[i].url = urls[i]; }
-
-      return this.rpages;
-  }
-
   get () {
-      return this.browser;
+    return this.browser;
   }
 
-  async close (page) {
-      this.rpages.splice(0, 1);
-      await page.close();
-  }
-
-  exit () {
-      this.browser.close();
+  close () {
+    this.browser.close();
   }
 
   async getBlocker () {
-      return await PuppeteerBlocker.fromLists(
-        fetch,
-        fullLists,
-        {
-          enableCompression: true,
-        },
-        {
-          path: 'engine.bin',
-          read: fs.readFile,
-          write: fs.writeFile,
-        },
-      );
+    return await PuppeteerBlocker.fromLists(
+      fetch,
+      fullLists,
+      {
+        enableCompression: true,
+      },
+      {
+        path: 'engine.bin',
+        read: fs.readFile,
+        write: fs.writeFile,
+      },
+    );
+  }
+
+  async newPage (url, i = 0) {
+    const npage: Npage = new Npage();
+    const page = await this.browser.newPage();
+
+    // page.setDefaultTimeout(0);
+    // page.emulate(this.device);
+
+    if (this.blocker) {
+      npage.blocker = await this.getBlocker();
+      await npage.blocker.enableBlockingInPage(page);
+
+      await (this.block.map(e => { npage.blocker[e](); }));
+    }
+
+    npage.index = i;
+    npage.page = page;
+    npage.url = url;
+
+    return npage;
+  }
+
+  async newPages (urls) {
+    const promisses = [];
+    for (let i = 0; i < urls.length; i++) {
+      promisses.push(new Promise<Npage>(async (resolve) => {
+        resolve(await this.newPage(urls[i], i));
+      }));
+    }
+
+    return this.pages = (await Promise.all(promisses)).map(p => p);
+  }
+
+  findPage (page) {
+    return this.pages.filter(p => p.index == page.index)
+  }
+
+  async closePage (page) {
+    this.pages.splice(page.i, 0);
+    await page.page.close();
   }
 }
 
