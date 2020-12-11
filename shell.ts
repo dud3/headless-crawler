@@ -123,13 +123,13 @@ console.log(argv);
   	urls.splice(0, 1);
   	fpage.url = url;
 
+  	processed++;
+
   	if (processed == sites - 1) {
   		console.log(`seconds elapsed = ${Math.floor((Date.now() - cstime) / 1000)} (${Date.now() - cstime}ms)`);
   		browser.close();
   		process.exit();
   	}
-
-  	processed++;
 
   	console.log("message", message, "processed", processed);
   }
