@@ -7,6 +7,10 @@ import Browser, { Npage } from './Browser';
 import dbSql from "./db-sql";
 
 const argv = {
+	"--headless": {
+		v: true,
+		f: eval
+	},
 	"--tabs": {
 		v: 10,
 		f: parseInt
@@ -130,7 +134,7 @@ console.log(argv);
   	console.log("message", message, "processed", processed);
   }
 
-  const browser = new Browser({ id: "ys", blocker: true, headless: false });
+  const browser = new Browser({ id: "ys", blocker: true, headless: argv['--headless'].v });
   await browser.launch();
 
 	let tabs: number = argv['--tabs'].v;
