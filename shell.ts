@@ -102,7 +102,7 @@ console.log(argv);
 
 								resolve(fpages[key]);
 
-                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url}`);
+                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url} - time: ${Date.now() - extract.startTime}`);
 								doEextract([fpages[key]]);
 
               } catch (err) {
