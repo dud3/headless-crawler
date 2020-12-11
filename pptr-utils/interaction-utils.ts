@@ -88,7 +88,7 @@ export const autoScroll = async page => {
     return new Promise((resolve, reject) => {
       try {
         let totalHeight = 0;
-        const distance = 150;
+        const distance = 450;
         const COUNT_MAX = 5;
         let count = 0;
         const timer = setInterval(() => {

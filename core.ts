@@ -196,6 +196,7 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
   } catch (err) {
     throw new Error(err);
   }
+  await autoScroll(page);
   await page.waitForTimeout(waitFor);
 
   // Url
