@@ -57,6 +57,8 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
       key_logging: {},
       session_recorders: {}
     } as any,
+
+    startTime: 0
   };
 
   const hosts = {
@@ -147,6 +149,8 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
   });
   */
 
+  extract.startTime = Date.now();
+
   // Page size
 
   async function addResponseSize(response) {
@@ -187,6 +191,8 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
   // await setupHttpCookieCapture(page, event => logger.warn(event));
 
   // Page response
+
+
 
   try {
     await page.goto(url, {
