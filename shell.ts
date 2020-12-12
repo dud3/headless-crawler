@@ -109,7 +109,7 @@ const launch = (async (c: number) => {
 
 										resolve(fpages[key]);
 
-		                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url} - time: ${Date.now() - extract.startTime}`);
+		                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url} \n\t- goto time: ${extract.goto.end - extract.goto.start} \n\t- dequeue time: ${Date.now() - extract.goto.start}\n`);
 										doEextract([fpages[key]]);
 
 		              } catch (err) {
@@ -138,7 +138,7 @@ const launch = (async (c: number) => {
 		  		process.exit();
 		  	}
 
-		  	console.log(i + " - message", message, "processed", processed);
+		  	console.log(i + "-", message, "\t- processed", processed, "\n");
 		  }
 
 		  const browser = new Browser({ id: "ys", blocker: true, headless: argv['--headless'].v });

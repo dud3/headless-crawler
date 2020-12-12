@@ -57,8 +57,10 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
       key_logging: {},
       session_recorders: {}
     } as any,
-
-    startTime: 0
+    goto: {
+      start: 0,
+      end: 0
+    }
   };
 
   const hosts = {
@@ -149,8 +151,6 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
   });
   */
 
-  extract.startTime = Date.now();
-
   // Page size
 
   async function addResponseSize(response) {
@@ -192,7 +192,7 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
 
   // Page response
 
-
+  extract.goto.start = Date.now();
 
   try {
     await page.goto(url, {
@@ -204,6 +204,8 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
   }
   await autoScroll(page);
   await page.waitForTimeout(waitFor);
+
+  extract.goto.end = Date.now();
 
   // Url
 
