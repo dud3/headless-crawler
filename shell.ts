@@ -11,6 +11,10 @@ const argv = {
 		v: true,
 		f: eval
 	},
+	"--instances": {
+		v: 1,
+		f: parseInt
+	},
 	"--tabs": {
 		v: 10,
 		f: parseInt
@@ -159,5 +163,4 @@ const launch = (async (c: number) => {
 	}
 });
 
-launch(2);
-instances.map((i) => i());
+launch(argv['--instances'].v); instances.map((i) => i());
