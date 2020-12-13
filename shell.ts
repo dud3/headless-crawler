@@ -113,6 +113,8 @@ const launch = (async (c: number) => {
 										doEextract([fpages[key]]);
 
 		              } catch (err) {
+		              	failed++;
+
 										dbSql.query(`update sites set crawled = 0, error="${addSlashes(err.message)}" where url = "${fpages[key].url}"`);
 
 		                resolve(fpages[key]);
@@ -134,6 +136,7 @@ const launch = (async (c: number) => {
 
 		  	if (processed == sites - 1) {
 		  		console.log(`seconds elapsed = ${Math.floor((Date.now() - cstime) / 1000)} (${Date.now() - cstime}ms)`);
+		  		console.log(`failed: ${failed}`)
 		  		browser.close();
 		  		process.exit();
 		  	}
@@ -150,6 +153,7 @@ const launch = (async (c: number) => {
 			let take: number = 50;
 			let skip: number = i * take;
 			let processed: number = 0;
+			let failed: number = 0;
 			let urls: Array<string> = await sqlUrls(skip, take);
 
 			skip += take;
