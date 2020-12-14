@@ -11,6 +11,10 @@ const argv = {
 		v: true,
 		f: eval
 	},
+	"--instances": {
+		v: 1,
+		f: parseInt
+	},
 	"--tabs": {
 		v: 10,
 		f: parseInt
@@ -105,10 +109,12 @@ const launch = (async (c: number) => {
 
 										resolve(fpages[key]);
 
-		                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url} - time: ${Date.now() - extract.startTime}`);
+		                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url} \n\t- goto time: ${extract.goto.end - extract.goto.start} \n\t- dequeue time: ${Date.now() - extract.goto.start}\n`);
 										doEextract([fpages[key]]);
 
 		              } catch (err) {
+		              	failed++;
+
 										dbSql.query(`update sites set crawled = 0, error="${addSlashes(err.message)}" where url = "${fpages[key].url}"`);
 
 		                resolve(fpages[key]);
@@ -130,11 +136,12 @@ const launch = (async (c: number) => {
 
 		  	if (processed == sites - 1) {
 		  		console.log(`seconds elapsed = ${Math.floor((Date.now() - cstime) / 1000)} (${Date.now() - cstime}ms)`);
+		  		console.log(`failed: ${failed}`)
 		  		browser.close();
 		  		process.exit();
 		  	}
 
-		  	console.log(i + " - message", message, "processed", processed);
+		  	console.log(i + "-", message, "\t- processed", processed, "\n");
 		  }
 
 		  const browser = new Browser({ id: "ys", blocker: true, headless: argv['--headless'].v });
@@ -146,6 +153,7 @@ const launch = (async (c: number) => {
 			let take: number = 50;
 			let skip: number = i * take;
 			let processed: number = 0;
+			let failed: number = 0;
 			let urls: Array<string> = await sqlUrls(skip, take);
 
 			skip += take;
@@ -159,5 +167,4 @@ const launch = (async (c: number) => {
 	}
 });
 
-launch(2);
-instances.map((i) => i());
+launch(argv['--instances'].v); instances.map((i) => i());
