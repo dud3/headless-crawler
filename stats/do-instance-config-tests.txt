@@ -1,0 +1,32 @@
+Pl - PLay - playwright - 50 tabs - 31550ms
+Pu - puppeteer - 50 tabs - 30688ms
+
+My computer:
+
+8GB,8CPU - 1ch instance,10 tabs
+seconds elapsed = 252 (252685ms)
+failed: 3
+
+Do instance:
+
+1 ch instances:
+
+1GB,1CPU - 1ch instance,2 tabs
+seconds elapsed = 535 (535733ms)
+failed: 27 (24 timeout)
+
+1GB,1CPU - 1ch instance,3 tabs
+seconds elapsed = 504 (504103ms)
+failed: 21 (18 timeout)
+
+1GB,1CPU - 1ch instance,4 tabs
+seconds elapsed = 550 (550717ms)
+failed: 26 (23 timeout)
+
+1GB,1CPU - 1ch instance,5 tabs
+seconds elapsed = 520 (520327ms)
+failed: 29 (27 timeout)
+
+1GB,1CPU - 1ch instance,6 tabs
+seconds elapsed = 576 (576761ms)
+failed: 28 (25 timeout)

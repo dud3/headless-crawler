@@ -1,0 +1,489 @@
+yarn run v1.22.5
+$ ts-node --project ./tsconfig.json shell.ts --tabs=1 --waitfor=5000 --sites=100
+{ '--headless': { v: true, f: [Function: eval] },
+  '--instances': { v: 1, f: [Function: parseInt] },
+  '--tabs': { v: 1, f: [Function: parseInt] },
+  '--sites': { v: 100, f: [Function: parseInt] },
+  '--waitfor': { v: 5000, f: [Function: parseInt] },
+  '--timeout': { v: 60000, f: [Function: parseInt] } }
+0- Resolved: github.com 
+	- goto time: 10573 
+	- dequeue time: 10722
+ 	- processed 1 
+
+0- Resolved: nytimes.com 
+	- goto time: 13211 
+	- dequeue time: 14007
+ 	- processed 2 
+
+0- Resolved: techcrunch.com 
+	- goto time: 12093 
+	- dequeue time: 12198
+ 	- processed 3 
+
+0- Resolved: bloomberg.com 
+	- goto time: 6026 
+	- dequeue time: 6407
+ 	- processed 4 
+
+0- Resolved: github.io 
+	- goto time: 8801 
+	- dequeue time: 9071
+ 	- processed 5 
+
+0- Resolved: blogspot.com 
+	- goto time: 7857 
+	- dequeue time: 7950
+ 	- processed 6 
+
+0- Resolved: google.com 
+	- goto time: 6173 
+	- dequeue time: 6245
+ 	- processed 7 
+
+0- Resolved: arstechnica.com 
+	- goto time: 7345 
+	- dequeue time: 7415
+ 	- processed 8 
+
+0- Resolved: bbc.com 
+	- goto time: 8690 
+	- dequeue time: 10214
+ 	- processed 9 
+
+0- Resolved: theguardian.com 
+	- goto time: 9505 
+	- dequeue time: 9707
+ 	- processed 10 
+
+0- Resolved: wsj.com 
+	- goto time: 11372 
+	- dequeue time: 14657
+ 	- processed 11 
+
+0- Resolved: medium.com 
+	- goto time: 12611 
+	- dequeue time: 12984
+ 	- processed 12 
+
+0- Resolved: washingtonpost.com 
+	- goto time: 29429 
+	- dequeue time: 29673
+ 	- processed 13 
+
+0- Resolved: wordpress.com 
+	- goto time: 7305 
+	- dequeue time: 7416
+ 	- processed 14 
+
+0- Failed: bbc.co.uk - Protocol error (Runtime.callFunctionOn): Execution context was destroyed. 	- processed 15 
+
+0- Failed: wired.com - TimeoutError: Navigation timeout of 60000 ms exceeded 	- processed 16 
+
+0- Resolved: reuters.com 
+	- goto time: 10087 
+	- dequeue time: 10296
+ 	- processed 17 
+
+0- Resolved: mozilla.org 
+	- goto time: 7056 
+	- dequeue time: 7187
+ 	- processed 18 
+
+0- Resolved: theatlantic.com 
+	- goto time: 7284 
+	- dequeue time: 8206
+ 	- processed 19 
+
+0- Resolved: twitter.com 
+	- goto time: 6818 
+	- dequeue time: 6857
+ 	- processed 20 
+
+0- Resolved: npr.org 
+	- goto time: 8054 
+	- dequeue time: 8910
+ 	- processed 21 
+
+0- Resolved: newyorker.com 
+	- goto time: 9673 
+	- dequeue time: 10782
+ 	- processed 22 
+
+0- Resolved: economist.com 
+	- goto time: 8486 
+	- dequeue time: 8610
+ 	- processed 23 
+
+0- Resolved: wikipedia.org 
+	- goto time: 6275 
+	- dequeue time: 6391
+ 	- processed 24 
+
+0- Resolved: mit.edu 
+	- goto time: 6717 
+	- dequeue time: 6840
+ 	- processed 25 
+
+0- Resolved: eff.org 
+	- goto time: 6864 
+	- dequeue time: 6952
+ 	- processed 26 
+
+0- Resolved: nature.com 
+	- goto time: 7863 
+	- dequeue time: 8058
+ 	- processed 27 
+
+0- Resolved: tumblr.com 
+	- goto time: 7783 
+	- dequeue time: 8138
+ 	- processed 28 
+
+0- Resolved: nautil.us 
+	- goto time: 12254 
+	- dequeue time: 12429
+ 	- processed 29 
+
+0- Resolved: ycombinator.com 
+	- goto time: 8041 
+	- dequeue time: 8106
+ 	- processed 30 
+
+0- Resolved: apple.com 
+	- goto time: 8469 
+	- dequeue time: 8536
+ 	- processed 31 
+
+0- Resolved: arxiv.org 
+	- goto time: 6781 
+	- dequeue time: 6839
+ 	- processed 32 
+
+0- Resolved: amazon.com 
+	- goto time: 12615 
+	- dequeue time: 15018
+ 	- processed 33 
+
+0- Resolved: youtube.com 
+	- goto time: 11840 
+	- dequeue time: 13935
+ 	- processed 34 
+
+0- Resolved: vice.com 
+	- goto time: 9283 
+	- dequeue time: 9804
+ 	- processed 35 
+
+0- Resolved: microsoft.com 
+	- goto time: 8402 
+	- dequeue time: 8555
+ 	- processed 36 
+
+0- Resolved: stanford.edu 
+	- goto time: 8563 
+	- dequeue time: 8668
+ 	- processed 37 
+
+0- Resolved: theverge.com 
+	- goto time: 7351 
+	- dequeue time: 7906
+ 	- processed 38 
+
+0- Resolved: scientificamerican.com 
+	- goto time: 8542 
+	- dequeue time: 8614
+ 	- processed 39 
+
+0- Resolved: reddit.com 
+	- goto time: 15086 
+	- dequeue time: 15311
+ 	- processed 40 
+
+0- Resolved: latimes.com 
+	- goto time: 11496 
+	- dequeue time: 14086
+ 	- processed 41 
+
+0- Resolved: atlasobscura.com 
+	- goto time: 9625 
+	- dequeue time: 10728
+ 	- processed 42 
+
+0- Resolved: quantamagazine.org 
+	- goto time: 9184 
+	- dequeue time: 9704
+ 	- processed 43 
+
+0- Resolved: ieee.org 
+	- goto time: 8321 
+	- dequeue time: 8385
+ 	- processed 44 
+
+0- Resolved: lwn.net 
+	- goto time: 6478 
+	- dequeue time: 6522
+ 	- processed 45 
+
+0- Resolved: facebook.com 
+	- goto time: 6422 
+	- dequeue time: 6673
+ 	- processed 46 
+
+0- Resolved: forbes.com 
+	- goto time: 7282 
+	- dequeue time: 8144
+ 	- processed 47 
+
+0- Resolved: slate.com 
+	- goto time: 8282 
+	- dequeue time: 8650
+ 	- processed 48 
+
+0- Resolved: paulgraham.com 
+	- goto time: 5985 
+	- dequeue time: 6100
+ 	- processed 49 
+
+0- Resolved: anandtech.com 
+	- goto time: 7598 
+	- dequeue time: 8241
+ 	- processed 50 
+
+0- Resolved: gitlab.com 
+	- goto time: 12836 
+	- dequeue time: 17541
+ 	- processed 51 
+
+0- Resolved: troyhunt.com 
+	- goto time: 7855 
+	- dequeue time: 7897
+ 	- processed 52 
+
+0- Resolved: jgc.org 
+	- goto time: 6261 
+	- dequeue time: 6309
+ 	- processed 53 
+
+0- Resolved: theintercept.com 
+	- goto time: 6963 
+	- dequeue time: 7308
+ 	- processed 54 
+
+0- Resolved: schneier.com 
+	- goto time: 6752 
+	- dequeue time: 6804
+ 	- processed 55 
+
+0- Resolved: buzzfeednews.com 
+	- goto time: 8471 
+	- dequeue time: 8835
+ 	- processed 56 
+
+0- Resolved: heroku.com 
+	- goto time: 10324 
+	- dequeue time: 11411
+ 	- processed 57 
+
+0- Resolved: dropbox.com 
+	- goto time: 8636 
+	- dequeue time: 8984
+ 	- processed 58 
+
+0- Resolved: danluu.com 
+	- goto time: 6314 
+	- dequeue time: 6400
+ 	- processed 59 
+
+0- Resolved: boingboing.net 
+	- goto time: 7032 
+	- dequeue time: 7192
+ 	- processed 60 
+
+0- Resolved: nih.gov 
+	- goto time: 7937 
+	- dequeue time: 8117
+ 	- processed 61 
+
+0- Resolved: gigaom.com 
+	- goto time: 9883 
+	- dequeue time: 11499
+ 	- processed 62 
+
+0- Resolved: sec.gov 
+	- goto time: 8597 
+	- dequeue time: 8905
+ 	- processed 63 
+
+0- Resolved: gamasutra.com 
+	- goto time: 8556 
+	- dequeue time: 8788
+ 	- processed 64 
+
+0- Resolved: yahoo.com 
+	- goto time: 12802 
+	- dequeue time: 13230
+ 	- processed 65 
+
+0- Resolved: nybooks.com 
+	- goto time: 10434 
+	- dequeue time: 11929
+ 	- processed 66 
+
+0- Resolved: chromium.org 
+	- goto time: 7206 
+	- dequeue time: 7252
+ 	- processed 67 
+
+0- Resolved: stratechery.com 
+	- goto time: 12576 
+	- dequeue time: 13807
+ 	- processed 68 
+
+0- Resolved: gizmodo.com 
+	- goto time: 8466 
+	- dequeue time: 9584
+ 	- processed 69 
+
+0- Resolved: rachelbythebay.com 
+	- goto time: 5908 
+	- dequeue time: 5945
+ 	- processed 70 
+
+0- Resolved: debian.org 
+	- goto time: 5843 
+	- dequeue time: 5878
+ 	- processed 71 
+
+0- Resolved: jvns.ca 
+	- goto time: 6278 
+	- dequeue time: 6505
+ 	- processed 72 
+
+0- Resolved: gabrielweinberg.com 
+	- goto time: 6092 
+	- dequeue time: 6141
+ 	- processed 73 
+
+0- Resolved: kickstarter.com 
+	- goto time: 12300 
+	- dequeue time: 17356
+ 	- processed 74 
+
+0- Resolved: steveblank.com 
+	- goto time: 36559 
+	- dequeue time: 39224
+ 	- processed 75 
+
+0- Resolved: daemonology.net 
+	- goto time: 6381 
+	- dequeue time: 6411
+ 	- processed 76 
+
+0- Resolved: sivers.org 
+	- goto time: 6310 
+	- dequeue time: 6404
+ 	- processed 77 
+
+0- Resolved: newscientist.com 
+	- goto time: 6644 
+	- dequeue time: 6799
+ 	- processed 78 
+
+0- Resolved: substack.com 
+	- goto time: 7005 
+	- dequeue time: 7092
+ 	- processed 79 
+
+0- Resolved: cmu.edu 
+	- goto time: 8335 
+	- dequeue time: 8826
+ 	- processed 80 
+
+0- Resolved: propublica.org 
+	- goto time: 8648 
+	- dequeue time: 9476
+ 	- processed 81 
+
+0- Resolved: blog.google 
+	- goto time: 7814 
+	- dequeue time: 8038
+ 	- processed 82 
+
+0- Resolved: typepad.com 
+	- goto time: 6877 
+	- dequeue time: 6958
+ 	- processed 83 
+
+0- Resolved: nymag.com 
+	- goto time: 8184 
+	- dequeue time: 8819
+ 	- processed 84 
+
+0- Failed: chronicle.com - Cannot read property 'length' of null 	- processed 85 
+
+0- Resolved: hackaday.com 
+	- goto time: 7617 
+	- dequeue time: 7671
+ 	- processed 86 
+
+0- Resolved: businessweek.com 
+	- goto time: 6201 
+	- dequeue time: 6569
+ 	- processed 87 
+
+0- Resolved: openai.com 
+	- goto time: 7789 
+	- dequeue time: 7906
+ 	- processed 88 
+
+0- Failed: tbray.org - Cannot read property 'length' of null 	- processed 89 
+
+0- Resolved: catonmat.net 
+	- goto time: 6420 
+	- dequeue time: 6497
+ 	- processed 90 
+
+0- Resolved: livejournal.com 
+	- goto time: 9731 
+	- dequeue time: 10925
+ 	- processed 91 
+
+0- Resolved: hbr.org 
+	- goto time: 9699 
+	- dequeue time: 9906
+ 	- processed 92 
+
+0- Resolved: openculture.com 
+	- goto time: 13973 
+	- dequeue time: 14920
+ 	- processed 93 
+
+0- Resolved: fb.com 
+	- goto time: 6755 
+	- dequeue time: 6959
+ 	- processed 94 
+
+0- Resolved: salon.com 
+	- goto time: 6461 
+	- dequeue time: 6755
+ 	- processed 95 
+
+0- Resolved: torproject.org 
+	- goto time: 9130 
+	- dequeue time: 9305
+ 	- processed 96 
+
+0- Resolved: mercurynews.com 
+	- goto time: 8321 
+	- dequeue time: 9345
+ 	- processed 97 
+
+0- Resolved: theparisreview.org 
+	- goto time: 8450 
+	- dequeue time: 8503
+ 	- processed 98 
+
+seconds elapsed = 988 (988185ms)
+failed: 4
+Done in 1000.80s.
