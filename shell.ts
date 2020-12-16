@@ -60,11 +60,7 @@ const launch = (async (c: number) => {
 		      loadSpeed = ${extract.timing.loadTime}
 		     `
 
-		    try {
-					await dbSql.query(sql, (err) => { if (err) throw err });
-		    } catch(err) {
-		      console.log(err.stack);
-		    }
+				await dbSql.query(sql, (err) => { if (err) console.log(err); });
 		  }
 
 		  const sqlUrls = async (skip, take): Promise<Array<string>> => {
@@ -104,14 +100,20 @@ const launch = (async (c: number) => {
 									theExtract.session_recorders = Object.keys(extract.reports.session_recorders).length;
 									theExtract.blocked_amount = extract.blocked.length;
 
-									await sqlExtract(theExtract, extract);
+									try {
+										await sqlExtract(theExtract, extract);
 
-									dbSql.query(`update sites set crawled = 1 where url = '${fpages[key].url}'`);
+										dbSql.query(`update sites set crawled = 1 where url = '${fpages[key].url}'`);
 
-									resolve(fpages[key]);
+										console.log("resolve me...");
 
-	                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url} \n\t- goto time: ${extract.goto.end - extract.goto.start} \n\t- dequeue time: ${Date.now() - extract.goto.start}\n`);
-									doEextract([fpages[key]]);
+										resolve(fpages[key]);
+
+		                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url} \n\t- goto time: ${extract.goto.end - extract.goto.start} \n\t- dequeue time: ${Date.now() - extract.goto.start}\n`);
+										doEextract([fpages[key]]);
+									} catch (e) {
+										console.log(e);
+									}
 
 	              } catch (err) {
 	              	failed++;

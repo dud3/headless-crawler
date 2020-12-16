@@ -10,8 +10,8 @@ SET NAMES utf8mb4;
 DROP TABLE IF EXISTS `extracts`;
 CREATE TABLE `extracts` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `title` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `blockedRequests` int NOT NULL,
   `totalRequests` int NOT NULL,
   `canvasFingerprint` int NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE `extracts` (
   `loadSpeed` double NOT NULL COMMENT 'seconds to document loaded',
   `loadFailed` tinyint unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 DROP TABLE IF EXISTS `sites`;
@@ -32,9 +32,25 @@ CREATE TABLE `sites` (
   `url` varchar(2024) NOT NULL,
   `crawled` tinyint(1) NOT NULL DEFAULT '0',
   `carwlTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `error` varchar(2024) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
+  `error` varchar(2024) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- 2020-12-16 00:23:16
+
+-- mysql -u root -p'p@$$w0rD'
+-- use extractor;
+
+ALTER DATABASE
+    extractor
+    CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_unicode_ci;
+
+ALTER TABLE
+    extracts
+    CONVERT TO CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE `extracts`
+  CHANGE `title` `title` text COLLATE 'utf8mb4_unicode_ci' NOT NULL AFTER `url`;

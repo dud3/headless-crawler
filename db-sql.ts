@@ -4,7 +4,8 @@ var con = mysql.createConnection({
   host: 'localhost',
   user: 'root',
   password: 'p@$$w0rD',
-  database: 'extractor'
+  database: 'extractor',
+  charset : 'utf8mb4_unicode_ci'
 })
 
 con.connect();

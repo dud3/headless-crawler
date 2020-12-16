@@ -1,5 +1,5 @@
 # Forever ts
-	forever start -c "yarn shell" ./
+	forever start -c "yarn shell --tabs=10 --waitfor=3000" ./
 
 # Headless chrome
 	apt-get install xdg-utils
@@ -17,9 +17,9 @@
 # pm2
 	For ts-node process managements we need to install the pm2 module with typescript support and ts-node
 		https://dev.to/boobo94/how-to-deploy-node-js-app-with-pm2-in-production-4207
-	
+
 	# Sample
-	
+
 	    "apps": [
 		{
 		    "name": "web",
@@ -40,13 +40,13 @@
 		    }
 		}
 	    ]
-	
+
 	# Prerequested
 		npm & node
 		PM2 npm i -g pm2
 		Typescript npm install -g typescript
 		PostgreSQL installed
-		
+
 	# How to run it
 		pm2 install typescript
 		pm2 install @types/node
