@@ -1,14 +1,23 @@
+# Instances
+	165.227.21.173 - 2gb/2cpu
+	165.227.28.233 - 2gb/2cpu
+	159.89.128.168 - 2gb/2cpu
+	159.89.130.28 - 2gb/2cpu
+
 # Forever ts
 	forever start -c "yarn shell --tabs=10 --waitfor=3000" ./
 
 # Reest crawler
-forever stopall
-pkill chrome
-pkill node
-service mysql restart
-forever start -c "yarn shell --tabs=10 --waitfor=3000 --sites=47350" ./
-forever list
-watch tail /root/.forever/Xxej.log
+	forever stopall
+	pkill chrome
+	pkill node
+	service mysql restart
+	mysql -u root -p'p@$$w0rD'
+	delete extractor.extracts where 1;
+	update extractor.sites set crawled = 0, error = '', crawlTime = '1970-01-01 01:01:01';
+	forever start -c "yarn shell --tabs=10 --waitfor=3000 --sites=47350" ./
+	forever list
+	watch tail /root/.forever/Xxej.log
 
 # Headless chrome
 	apt-get install xdg-utils
