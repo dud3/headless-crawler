@@ -39,8 +39,11 @@ CREATE TABLE `sites` (
 
 -- 2020-12-16 00:23:16
 
+-- mysql -u root -p'p@$$w0rD'
+-- use extractor;
+
 ALTER DATABASE
-    extrator
+    extractor
     CHARACTER SET = utf8mb4
     COLLATE = utf8mb4_unicode_ci;
 
@@ -48,3 +51,6 @@ ALTER TABLE
     extracts
     CONVERT TO CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE `extracts`
+  CHANGE `title` `title` text COLLATE 'utf8mb4_unicode_ci' NOT NULL AFTER `url`;
