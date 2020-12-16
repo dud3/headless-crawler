@@ -44,7 +44,7 @@ const instances = [];
 const launch = (async (c: number) => {
 	for (let i = 0; i < c; i++) {
 		instances.push(async () => {
-		  const sqlExtract = async (theExtract, extract) => {
+		  const sqlExtract = async (theExtract, extract, fpage) => {
 
 		  	try {
 			  	const sql = `
@@ -62,7 +62,13 @@ const launch = (async (c: number) => {
 			      loadSpeed = ${extract.timing.loadTime}
 			     `
 
-					await dbSql.query(sql, (err) => { if (err) console.log(err); });
+					await dbSql.query(sql, (err) => {
+						if (err) {
+							console.log(err);
+						} else {
+							dbSql.query(`update sites set crawled = 1 and length(error) = 0 where url = '${fpage.url}'`);
+						}
+					});
 		   	} catch (e) {
 		   		throw new Error(e);
 		   	}
@@ -70,7 +76,7 @@ const launch = (async (c: number) => {
 
 		  const sqlUrls = async (skip, take): Promise<Array<string>> => {
 		  	return new Promise((resolve) => {
-			  	dbSql.query(`select * from sites limit ${skip}, ${take}`, async (err, rows) => {
+			  	dbSql.query(`select * from sites where crawled = 0 and length(error) = 0 limit ${skip}, ${take}`, async (err, rows) => {
 			   		resolve(rows.map(row => row.url) || []);
 			  	});
 		   	});
@@ -107,20 +113,12 @@ const launch = (async (c: number) => {
 									extract.readability = extract.readability == null ? '' : extract.readability;
 
 									try {
+										await sqlExtract(theExtract, extract, fpages[key]);
 
-										try {
-											await sqlExtract(theExtract, extract);
+										resolve(fpages[key]);
 
-											dbSql.query(`update sites set crawled = 1 where url = '${fpages[key].url}'`);
-
-											resolve(fpages[key]);
-
-			                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url} \n\t- goto time: ${extract.goto.end - extract.goto.start} \n\t- dequeue time: ${Date.now() - extract.goto.start}\n`);
-											doEextract([fpages[key]]);
-										} catch (e) {
-											console.log(e);
-										}
-
+		                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url} \n\t- goto time: ${extract.goto.end - extract.goto.start} \n\t- dequeue time: ${Date.now() - extract.goto.start}\n`);
+										doEextract([fpages[key]]);
 									} catch (e) {
 										console.log(e);
 									}

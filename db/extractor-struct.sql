@@ -54,3 +54,6 @@ ALTER TABLE
 
 ALTER TABLE `extracts`
   CHANGE `title` `title` text COLLATE 'utf8mb4_unicode_ci' NOT NULL AFTER `url`;
+
+ALTER TABLE `sites`
+CHANGE `crawlTime` `crawlTime` timestamp NOT NULL DEFAULT '1970-01-01 01:01:01' AFTER `crawled`;
