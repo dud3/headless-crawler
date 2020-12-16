@@ -45,22 +45,27 @@ const launch = (async (c: number) => {
 	for (let i = 0; i < c; i++) {
 		instances.push(async () => {
 		  const sqlExtract = async (theExtract, extract) => {
-		  	const sql = `
-					insert into extracts set
-		      url = '${extract.url}',
-		      title = '${addSlashes(extract.title)}',
-		      blockedRequests = ${theExtract.blocked_amount},
-		      totalRequests = ${extract.requests.amount},
-		      canvasFingerprint = ${theExtract.canvas_fingerprinters},
-		      keyLogging = ${theExtract.key_logging},
-		      sessionRecording = ${theExtract.session_recorders},
-		      totalSize = ${extract.pageSize},
-		      contentSize = ${extract.readability.length},
-		      contentReaderable = 1,
-		      loadSpeed = ${extract.timing.loadTime}
-		     `
 
-				await dbSql.query(sql, (err) => { if (err) console.log(err); });
+		  	try {
+			  	const sql = `
+						insert into extracts set
+			      url = '${extract.url}',
+			      title = '${addSlashes(extract.title)}',
+			      blockedRequests = ${theExtract.blocked_amount},
+			      totalRequests = ${extract.requests.amount},
+			      canvasFingerprint = ${theExtract.canvas_fingerprinters},
+			      keyLogging = ${theExtract.key_logging},
+			      sessionRecording = ${theExtract.session_recorders},
+			      totalSize = ${extract.pageSize},
+			      contentSize = ${extract.readability.length},
+			      contentReaderable = 1,
+			      loadSpeed = ${extract.timing.loadTime}
+			     `
+
+					await dbSql.query(sql, (err) => { if (err) console.log(err); });
+		   	} catch (e) {
+		   		throw new Error(e);
+		   	}
 		  }
 
 		  const sqlUrls = async (skip, take): Promise<Array<string>> => {
@@ -99,18 +104,23 @@ const launch = (async (c: number) => {
 									theExtract.key_logging = Object.keys(extract.reports.key_logging).length;
 									theExtract.session_recorders = Object.keys(extract.reports.session_recorders).length;
 									theExtract.blocked_amount = extract.blocked.length;
+									extract.readability = extract.readability == null ? '' : extract.readability;
 
 									try {
-										await sqlExtract(theExtract, extract);
 
-										dbSql.query(`update sites set crawled = 1 where url = '${fpages[key].url}'`);
+										try {
+											await sqlExtract(theExtract, extract);
 
-										console.log("resolve me...");
+											dbSql.query(`update sites set crawled = 1 where url = '${fpages[key].url}'`);
 
-										resolve(fpages[key]);
+											resolve(fpages[key]);
 
-		                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url} \n\t- goto time: ${extract.goto.end - extract.goto.start} \n\t- dequeue time: ${Date.now() - extract.goto.start}\n`);
-										doEextract([fpages[key]]);
+			                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url} \n\t- goto time: ${extract.goto.end - extract.goto.start} \n\t- dequeue time: ${Date.now() - extract.goto.start}\n`);
+											doEextract([fpages[key]]);
+										} catch (e) {
+											console.log(e);
+										}
+
 									} catch (e) {
 										console.log(e);
 									}
