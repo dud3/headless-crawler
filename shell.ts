@@ -88,41 +88,43 @@ const launch = (async (c: number) => {
 		      const promisses = [];
 
 		      for (const key in fpages) {
-		          promisses.push(() => (new Promise(async (resolve) => {
-		              const theExtract: any = {
-		                  canvas_fingerprinters: {},
-		                  key_logging: {}
-		              };
+						promisses.push(() => {
+							new Promise(async (resolve) => {
+		            const theExtract: any = {
+		                canvas_fingerprinters: {},
+		                key_logging: {}
+		            };
 
-		              try {
-		                const extract = await core(fpages[key].blocker, fpages[key].page, "https://" + fpages[key].url, argv["--timeout"].v, argv["--waitfor"].v);
+	              try {
+	                const extract = await core(fpages[key].blocker, fpages[key].page, "https://" + fpages[key].url, argv["--timeout"].v, argv["--waitfor"].v);
 
-										theExtract.canvas_fingerprinters = extract.reports.canvas_fingerprinters.fingerprinters.length;
-										// theExtract.canvas_font_fingerprinters = Object.keys(extract.reports.canvas_font_fingerprinters.canvas_font).length;
-										theExtract.key_logging = Object.keys(extract.reports.key_logging).length;
-										theExtract.session_recorders = Object.keys(extract.reports.session_recorders).length;
-										theExtract.blocked_amount = extract.blocked.length;
+									theExtract.canvas_fingerprinters = extract.reports.canvas_fingerprinters.fingerprinters.length;
+									// theExtract.canvas_font_fingerprinters = Object.keys(extract.reports.canvas_font_fingerprinters.canvas_font).length;
+									theExtract.key_logging = Object.keys(extract.reports.key_logging).length;
+									theExtract.session_recorders = Object.keys(extract.reports.session_recorders).length;
+									theExtract.blocked_amount = extract.blocked.length;
 
-										await sqlExtract(theExtract, extract);
+									await sqlExtract(theExtract, extract);
 
-										dbSql.query(`update sites set crawled = 1 where url = '${fpages[key].url}'`);
+									dbSql.query(`update sites set crawled = 1 where url = '${fpages[key].url}'`);
 
-										resolve(fpages[key]);
+									resolve(fpages[key]);
 
-		                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url} \n\t- goto time: ${extract.goto.end - extract.goto.start} \n\t- dequeue time: ${Date.now() - extract.goto.start}\n`);
-										doEextract([fpages[key]]);
+	                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url} \n\t- goto time: ${extract.goto.end - extract.goto.start} \n\t- dequeue time: ${Date.now() - extract.goto.start}\n`);
+									doEextract([fpages[key]]);
 
-		              } catch (err) {
-		              	failed++;
+	              } catch (err) {
+	              	failed++;
 
-										dbSql.query(`update sites set crawled = 0, error="${addSlashes(err.message)}" where url = "${fpages[key].url}"`);
+									dbSql.query(`update sites set crawled = 0, error="${addSlashes(err.message)}" where url = "${fpages[key].url}"`);
 
-		                resolve(fpages[key]);
+	                resolve(fpages[key]);
 
-		                swapTab(fpages[key], urls[0], `Failed: ${fpages[key].url} - ${err.message}`);
-										doEextract([fpages[key]]);
-		              }
-		          })));
+	                swapTab(fpages[key], urls[0], `Failed: ${fpages[key].url} - ${err.message}`);
+									doEextract([fpages[key]]);
+	              }
+							})
+						});
 		      }
 
 		      Promise.all(promisses.map(p => p()));

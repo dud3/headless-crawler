@@ -1,7 +1,0 @@
-No Tabs closed after page load:
-1. Single chromium instance - 160 tabs - 4min, 20sec
-2. 4 chromium instances - 40 tabs/each - 4min, 14sec
-
-Tab closed after page load:
-1. Single chromium instance - 40 tabs - 1min, 19.5sec
-2. 4 chromium instances - 10 tabs/each - 1min - 10sec
