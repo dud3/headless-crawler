@@ -1,6 +1,15 @@
 # Forever ts
 	forever start -c "yarn shell --tabs=10 --waitfor=3000" ./
 
+# Reest crawler
+forever stopall
+pkill chrome
+pkill node
+service mysql restart
+forever start -c "yarn shell --tabs=10 --waitfor=3000 --sites=47350" ./
+forever list
+watch tail /root/.forever/Xxej.log
+
 # Headless chrome
 	apt-get install xdg-utils
 	apt-get install chromium-brwoser
