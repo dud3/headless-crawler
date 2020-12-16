@@ -1,4 +1,6 @@
-const { addSlashes, stripSlashes } = require('slashes');
+const { addSlashes, stripSlashes } = require('slashes')
+
+import constants from './constants'
 
 import puppeteer, { LoadEvent, Page, EmulateOptions } from "puppeteer";
 import core from "./core";
@@ -63,11 +65,7 @@ const launch = (async (c: number) => {
 			     `
 
 					await dbSql.query(sql, (err) => {
-						if (err) {
-							console.log(err);
-						} else {
-							dbSql.query(`update sites set crawled = 1 and length(error) = 0 where url = '${fpage.url}'`);
-						}
+						if (err) console.log(err);
 					});
 		   	} catch (e) {
 		   		throw new Error(e);
@@ -117,7 +115,16 @@ const launch = (async (c: number) => {
 
 										resolve(fpages[key]);
 
-		                swapTab(fpages[key], urls[0], `Resolved: ${fpages[key].url} \n\t- goto time: ${extract.goto.end - extract.goto.start} \n\t- dequeue time: ${Date.now() - extract.goto.start}\n`);
+										const sql = `update sites set crawled = 1 and error = '' where url = "${fpages[key].url}"`;
+										console.log(constants.shell.colors.dim, sql);
+										dbSql.query(sql);
+
+		                swapTab(
+		                	fpages[key],
+		                	urls[0],
+		                	`Resolved: ${fpages[key].url} \n\t- goto time: ${extract.goto.end - extract.goto.start} \n\t- dequeue time: ${Date.now() - extract.goto.start}\n`
+		                );
+
 										doEextract([fpages[key]]);
 									} catch (e) {
 										console.log(e);
@@ -126,9 +133,9 @@ const launch = (async (c: number) => {
 	              } catch (err) {
 	              	failed++;
 
-									dbSql.query(`update sites set crawled = 0, error="${addSlashes(err.message)}" where url = "${fpages[key].url}"`);
-
 	                resolve(fpages[key]);
+
+									dbSql.query(`update sites set crawled = 0, error="${addSlashes(err.message)}" where url = "${fpages[key].url}"`);
 
 	                swapTab(fpages[key], urls[0], `Failed: ${fpages[key].url} - ${err.message}`);
 									doEextract([fpages[key]]);
@@ -153,7 +160,7 @@ const launch = (async (c: number) => {
 		  		process.exit();
 		  	}
 
-		  	console.log(i + "-", message, "\t- processed", processed, "\n");
+		  	console.log(i + " -", message, "\t- processed", processed, "\n");
 		  }
 
 		  const browser = new Browser({ id: "ys", blocker: true, headless: argv['--headless'].v });

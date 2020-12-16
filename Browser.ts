@@ -8,6 +8,7 @@ export class Npage {
   page: Page;
   blocker?: PuppeteerBlocker;
   url: string;
+  urlid: Number;
 }
 
 export class Config {
