@@ -7,13 +7,25 @@
 # Forever ts
 	forever start -c "yarn shell --tabs=10 --waitfor=3000" ./
 
-# Reest crawler
+# Rset crawler
+	cd headless-crawler
+	git pull
+	forever stopall
+	pkill chrome
+	pkill node
+	service mysql restart
+	forever start -c "yarn shell --tabs=10 --waitfor=3000 --sites=47350" ./
+
+# Restart crawler
+	cd headless-crawler
+	git pull
 	forever stopall
 	pkill chrome
 	pkill node
 	service mysql restart
 	mysql -u root -p'p@$$w0rD'
-	delete extractor.extracts where 1;
+	delete from extractor.extracts where 1;
+	ALTER TABLE extractor.extracts AUTO_INCREMENT = 1;
 	update extractor.sites set crawled = 0, error = '', crawlTime = '1970-01-01 01:01:01';
 	forever start -c "yarn shell --tabs=10 --waitfor=3000 --sites=47350" ./
 	forever list
