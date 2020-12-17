@@ -174,7 +174,7 @@ const launch = (async (c: number) => {
 			let skip: number = i * take;
 			let processed: number = 0;
 			let failed: number = 0;
-			let urls: Array<string> = ['alexcheuk.com'];
+			let urls: Array<string> = await sqlUrls(skip, take); // ['alexcheuk.com'];
 
 			skip += take;
 
