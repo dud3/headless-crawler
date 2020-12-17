@@ -18,10 +18,11 @@
     "directory": "packages/adblocker-puppeteer-example"
   },
   "scripts": {
-    "start-http-server": " ts-node --project ./tsconfig.json http.ts",
+    "build": "ts-node --project ./tsconfig.json build.ts",
+    "start-http-server": "ts-node --project ./tsconfig.json http.ts",
     "start-socket-server": "ts-node --project ./tsconfig.json socket.ts",
-    "shell": "ts-node --project ./tsconfig.json shell.ts",
     "start-client-server": "ts-node --project ./tsconfig.json client-server.ts",
+    "shell": "ts-node --project ./tsconfig.json shell.ts",
     "pm2-client-server": "pm2 start ts-node -- -P tsconfig.json client-server.ts",
     "pm2-http-server": "pm2 start ts-node -- -P tsconfig.json http.ts",
     "pm2-socket-server": "pm2 start ts-node -- -P tsconfig.json socket.ts"
