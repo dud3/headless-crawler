@@ -59,7 +59,7 @@ const launch = (async (c: number) => {
 			      keyLogging = ${theExtract.key_logging},
 			      sessionRecording = ${theExtract.session_recorders},
 			      totalSize = ${extract.pageSize},
-			      contentSize = ${extract.readability.length},
+			      contentSize = ${extract.readability.length || 0},
 			      contentReaderable = 1,
 			      loadSpeed = ${extract.timing.loadTime}
 			     `
@@ -174,7 +174,7 @@ const launch = (async (c: number) => {
 			let skip: number = i * take;
 			let processed: number = 0;
 			let failed: number = 0;
-			let urls: Array<string> = await sqlUrls(skip, take);
+			let urls: Array<string> = ['alexcheuk.com'];
 
 			skip += take;
 
