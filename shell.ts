@@ -52,7 +52,7 @@ const launch = (async (c: number) => {
 			  	const sql = `
 						insert into extracts set
 			      url = '${extract.url}',
-			      title = '${addSlashes(extract.title)}',
+			      title = '${addSlashes(extract.title)}.slice(0, 200)',
 			      blockedRequests = ${theExtract.blocked_amount},
 			      totalRequests = ${extract.requests.amount},
 			      canvasFingerprint = ${theExtract.canvas_fingerprinters},
@@ -109,6 +109,7 @@ const launch = (async (c: number) => {
 									theExtract.session_recorders = Object.keys(extract.reports.session_recorders).length;
 									theExtract.blocked_amount = extract.blocked.length;
 									extract.readability = extract.readability == null ? '' : extract.readability;
+									extract.title = extract.title || '';
 
 									try {
 										await sqlExtract(theExtract, extract, fpages[key]);
