@@ -199,11 +199,12 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
       timeout: timeout,
       waitUntil: defaultWaitUntil
     });
-  } catch (err) {
-    throw new Error(err);
+
+    await autoScroll(page);
+    await page.waitForTimeout(waitFor);
+  } catch (e) {
+    throw new Error(e);
   }
-  await autoScroll(page);
-  await page.waitForTimeout(waitFor);
 
   extract.goto.end = Date.now();
 
@@ -215,19 +216,27 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
 
   // Timing
 
-  extract.timing.loadTime = await page.evaluate(_ => {
-    return Date.now() - window.performance.timing.navigationStart;
-  });
+  try {
+    extract.timing.loadTime = await page.evaluate(_ => {
+      return Date.now() - window.performance.timing.navigationStart;
+    });
+  } catch (e) {
+    console.log(e); // todo: handle me
+  }
 
   // Readability
 
-  extract.readability = await page.evaluate(`
-    (function(){
-      ${readabilityStr}
-      ${rexecutor}
-      return rexecutor();
-    }())
-  `);
+  try {
+    extract.readability = await page.evaluate(`
+      (function(){
+        ${readabilityStr}
+        ${rexecutor}
+        return rexecutor();
+      }())
+    `);
+  } catch (e) {
+    console.log(e); // todo: handle me
+  }
 
   // Off events
 
