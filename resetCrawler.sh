@@ -1,5 +1,5 @@
 #!/bin/bash
-
+cd /root/headless-crawler
 forever stopall
 pkill chrome
 pkill node
