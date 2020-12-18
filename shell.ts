@@ -33,15 +33,25 @@ const argv = {
 		v: 60000,
 		f: parseInt
 	},
-	"--sqlcondition": {
-		v: "crawled = 0 and length(error) = 0",
-		f: (v) => v
-	}
+  "--syncerrors": {
+      v: "" as any, // epte,oe
+      f: (v) => v.split(',').map(c => c)
+  },
+  "--synctimeouts": {
+      v: false,
+      f: eval
+  },
+  "--debug": {
+  	v: false,
+  	f: eval
+  }
 };
 
-if (process.argv.length > 2) {
-	process.argv.splice(0, 2);
-	process.argv.map(a => a.split('=')).map(a => { const c = argv[a[0]]; if (c !== undefined) c.v = c.f(a[1]); });
+if(process.argv.length > 2) {
+  process.argv.splice(0, 2);
+  process.argv.map(a => a.split('=')).map(a => { const c = argv[a[0]]; if (c !== undefined) c.v = a[1]; });
+
+  for(const k in argv) argv[k].v = argv[k].f(argv[k].v);
 }
 
 console.log(argv);
@@ -68,6 +78,8 @@ const launch = (async (c: number) => {
 			      loadSpeed = ${extract.timing.loadTime}
 			     `
 
+          if (argv['--debug'].v) console.log(sql);
+
 					await dbSql.query(sql, (err) => {
 						if (err) console.log(err);
 					});
@@ -78,7 +90,26 @@ const launch = (async (c: number) => {
 
 		  const sqlUrls = async (skip, take): Promise<Array<string>> => {
 		  	return new Promise((resolve) => {
-			  	dbSql.query(`select * from sites where ${argv['--sqlcondition'].v} limit ${skip}, ${take}`, async (err, rows) => {
+
+		  		let condition = "(crawled = 0 and length(error) = 0)";
+
+					argv['--syncerrors'].v.map((c) => {
+						switch (c) {
+							case "epte":
+								condition += " OR (`error` LIKE '%Error: Protocol error%') ";
+							break;
+
+							case "eoe":
+								condition += " "; // todo: ...
+							break;
+						}
+					});
+
+          if(argv['--synctimeouts'].v) condition += " OR `error` LIKE '%TimeoutError%' ";
+
+          if (argv['--debug'].v) console.log(condition);
+
+			  	dbSql.query(`select * from sites where ${condition} limit ${skip}, ${take}`, async (err, rows) => {
 			   		resolve(rows.map(row => row.url) || []);
 			  	});
 		   	});
