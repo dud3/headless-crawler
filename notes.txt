@@ -4,6 +4,13 @@
 	159.89.128.168 - 2gb/2cpu
 	159.89.130.28 - 2gb/2cpu
 
+# Reset crawler script
+// It needs the path var for the crontab
+// https://stackoverflow.com/questions/14612444/bash-script-runs-manually-but-fails-on-crontab#:~:text=The%20problem%20is%20probably%20that,that%20under%20which%20crontab%20runs.&text=To%20fix%20this%2C%20first%20print,programs%20by%20their%20full%20path.
+// E.x:
+//
+// export PATH="/usr/lib/lightdm/lightdm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/mysql/bin:/opt/android-sdk-linux/tools:/opt/android-sdk-linux/platform-tools:~/usr/lib/jvm/jdk-6/bin"
+
 # Forever ts
 	forever start -c "yarn shell --tabs=10 --waitfor=3000" ./
 

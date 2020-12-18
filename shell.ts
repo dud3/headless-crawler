@@ -32,6 +32,10 @@ const argv = {
 	"--timeout": {
 		v: 60000,
 		f: parseInt
+	},
+	"--sqlcondition": {
+		v: "crawled = 0 and length(error) = 0",
+		f: (v) => v
 	}
 };
 
@@ -74,7 +78,7 @@ const launch = (async (c: number) => {
 
 		  const sqlUrls = async (skip, take): Promise<Array<string>> => {
 		  	return new Promise((resolve) => {
-			  	dbSql.query(`select * from sites where crawled = 0 and length(error) = 0 limit ${skip}, ${take}`, async (err, rows) => {
+			  	dbSql.query(`select * from sites where ${argv['--sqlcondition'].v} limit ${skip}, ${take}`, async (err, rows) => {
 			   		resolve(rows.map(row => row.url) || []);
 			  	});
 		   	});
