@@ -34,7 +34,7 @@ yarn start-socket-server
 
 ### comamnd line usage
 ```
-yran shell
+yran shell --headless=false --instances=1 --sites=8 --waitfor=3000 --timeout=60000
 
 "--headless": Boolean,
 "--instances": Integer (number of chrome intsances)
