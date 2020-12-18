@@ -1,5 +1,13 @@
 # install
 
+### Requirements
+```
+nodejs
+npm
+yarn
+mysql
+```
+
 ### Node
 ```
 npm install @types/puppeteer
@@ -27,6 +35,13 @@ yarn start-socket-server
 ### comamnd line usage
 ```
 yran shell
+
+"--headless": Boolean,
+"--instances": Integer (number of chrome intsances)
+"--tabs": Integer, (number of tabs per instance)
+"--sites": Integer, (number of sites to crawl)
+"--waitfor": Integer (ms after puppeteer page.goto())
+"--timeout": Integer (ms puppeteer page.goto() timeout)
 ```
 
 # Web client
