@@ -100,7 +100,7 @@ const launch = (async (c: number) => {
 								condition += " OR (`error` LIKE '%Error: Protocol error%') ";
 							break;
 
-							case "eoe":
+							case "eoe":	 
 								condition += " "; // todo: ...
 							break;
 						}
@@ -113,11 +113,15 @@ const launch = (async (c: number) => {
 
 			  	dbSql.query(sql, async (err, rows) => {
 			  		const ids = rows.map(r => r.id).join(',');
-			  		const idsql = `update sites set locked = 1 where id in(${ids})`;
-
-			  		dbSql.query(idsql, async (err) => {
-			   			resolve(rows.map(row => row.url) || []);
-			   		});
+			  		if (ids.length > 0) {
+			  			const idsql = `update sites set locked = 1 where id in(${ids})`;
+			  		
+				  		dbSql.query(idsql, async (err) => {
+				   			resolve(rows.map(row => row.url) || []);
+				   		});
+			  		} else {
+			  			resolve([]);
+			  		}
 			  	});
 		   	});
 		  }
@@ -125,7 +129,7 @@ const launch = (async (c: number) => {
 		  const doEextract = async (fpages: Array<Npage>) => {
 	      const promisses = [];
 
-	      if (urls.length == 0) return;
+	      if (urls.length == 0 || processed >= sites) return;
 
 	      for (const key in fpages) {
 					promisses.push(() => {
