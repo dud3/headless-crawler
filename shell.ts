@@ -12,7 +12,7 @@ import dbSql from "./db-sql";
 const argv = {
 	"--headless": {
 		v: true,
-		f: v => v == "true" ? true : false
+		f: v => v == "false" ? false : true
 	},
 	"--instances": {
 		v: 1,
