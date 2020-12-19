@@ -184,11 +184,10 @@ const launch = (async (c: number) => {
 									await browser.closePage(npage);
 							  	npage = await browser.newPage(npage.url, npage.index);
 						  	}
-
+						  	
+						  	failed++;
                 await swapTab(npage, urls[0], `Failed(${failed}): ${npage.url} - ${err.message}`);
                 await resolve();
-
-						  	failed++;
               }
 						})
 					});
