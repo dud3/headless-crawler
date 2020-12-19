@@ -152,8 +152,6 @@ const launch = (async (c: number) => {
 								extract.title = extract.title || '';
 
 								try {
-									await doEextract([npage]);
-
 									await sqlExtract(theExtract, extract, npage);
 									dbSql.query(`update sites set crawled = 1, error = '' where url = "${npage.url}"`);
 
@@ -171,15 +169,13 @@ const launch = (async (c: number) => {
 	                	` - dequeue time: ${Date.now() - extract.goto.start}`
 	                );
 	                await resolve();
-
+									await doEextract([npage]);
 								} catch (e) {
 									console.log(e);
 								}
 
               } catch (err) {
-								await doEextract([npage]);
-
-								dbSql.query(`update sites set crawled = 0, error="${addSlashes(err.message)}" where url = "${npage.url}"`);
+              	dbSql.query(`update sites set crawled = 0, error="${addSlashes(err.message)}" where url = "${npage.url}"`);
 								if (argv['--closetab'].v) {
 									await browser.closePage(npage);
 							  	npage = await browser.newPage(npage.url, npage.index);
@@ -188,6 +184,7 @@ const launch = (async (c: number) => {
 						  	failed++;
                 await swapTab(npage, urls[0], `Failed(${failed}): ${npage.url} - ${err.message}`);
                 await resolve();
+								await doEextract([npage]);
               }
 						})
 					});
