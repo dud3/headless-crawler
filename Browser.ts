@@ -4,11 +4,11 @@ import { promises as fs } from 'fs';
 import fetch from 'node-fetch';
 
 export class Npage {
-  index: Number;
+  index: number;
   page: Page;
   blocker?: PuppeteerBlocker;
   url: string;
-  urlid: Number;
+  urlid: number;
 }
 
 export class Config {
@@ -124,6 +124,10 @@ class Browser {
     }
 
     return this.pages = (await Promise.all(promisses)).map(p => p);
+  }
+
+  pushNewPage (page: Npage) {
+    this.pages.push(page);
   }
 
   findPage (page) {

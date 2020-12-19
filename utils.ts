@@ -3,6 +3,7 @@ import fs from "fs";
 import { join } from "path";
 import { getDomain, getPublicSuffix } from "tldts";
 import { ExtractorEvent } from "./types";
+
 export const getFirstPartyPs = firstPartyUri => {
   return getPublicSuffix(firstPartyUri);
 };
@@ -99,6 +100,7 @@ export const loadEventData = (dir, filename = "inspection-log.ndjson") => {
     .map(m => loadJSONSafely(m))
     .filter(m => m.level === "warn");
 };
+
 // Not using this atm but leaving it in because it might be useful in the future
 export const getStackType = (stack, firstPartyDomain) => {
   let hasFirstParty = false;
@@ -121,6 +123,7 @@ export const getStackType = (stack, firstPartyDomain) => {
     return "mixed";
   }
 };
+
 export const isBase64 = str => {
   if (str === "" || str.trim() === "") {
     return false;
@@ -138,6 +141,7 @@ export const getStringHash = (algorithm, str) => {
     .update(str)
     .digest("hex");
 };
+
 export const getHashedValues = (algorithm, object) => {
   return Object.entries(object).reduce((acc, cur: any) => {
     acc[cur[0]] =
@@ -147,3 +151,7 @@ export const getHashedValues = (algorithm, object) => {
     return acc;
   }, {});
 };
+
+// Int
+
+export const sparseInt = (v, d) => Number.isInteger(parseInt(v)) ? parseInt(v) : d;

@@ -26,6 +26,7 @@ const sql = `
     PRIMARY KEY (\`id\`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+  ALTER TABLE extracts AUTO_INCREMENT = 1;
 
   DROP TABLE IF EXISTS \`sites\`;
   CREATE TABLE \`sites\` (
@@ -33,6 +34,7 @@ const sql = `
     \`url\` varchar(2024) NOT NULL,
     \`crawled\` tinyint(1) NOT NULL DEFAULT '0',
     \`crawlTime\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    \`locked\` tinyint(1) NOT NULL DEFAULT '0',
     \`error\` varchar(2024) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
     PRIMARY KEY (\`id\`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -53,42 +55,44 @@ const sql = `
   ALTER TABLE \`sites\`
     CHANGE \`crawlTime\` \`crawlTime\` timestamp NOT NULL DEFAULT '1970-01-01 01:01:01' AFTER \`crawled\`;
 
-  INSERT INTO \`sites\` (\`id\`, \`url\`, \`crawled\`, \`crawlTime\`, \`error\`) VALUES
-    (11,  'wsj.com',  0,  '2020-12-11 20:27:29',  ''),
-    (13,  'washingtonpost.com', 0,  '2020-12-11 20:27:32',  ''),
-    (14,  'wordpress.com',  0,  '2020-12-11 20:27:29',  ''),
-    (16,  'wired.com',  0,  '2020-12-11 20:27:32',  ''),
-    (17,  'reuters.com',  0,  '2020-12-11 20:27:31',  ''),
-    (18,  'mozilla.org',  0,  '2020-12-11 20:27:30',  ''),
-    (21,  'npr.org',  0,  '2020-12-11 20:27:37',  ''),
-    (22,  'newyorker.com',  0,  '2020-12-11 20:27:45',  ''),
-    (23,  'economist.com',  0,  '2020-12-11 20:27:42',  ''),
-    (24,  'wikipedia.org',  0,  '2020-12-11 20:27:39',  ''),
-    (28,  'tumblr.com', 0,  '2020-12-11 20:27:45',  ''),
-    (29,  'nautil.us',  0,  '2020-12-11 20:27:56',  ''),
-    (30,  'ycombinator.com',  0,  '2020-12-11 20:27:54',  ''),
-    (31,  'apple.com',  0,  '2020-12-11 20:27:49',  ''),
-    (32,  'arxiv.org',  0,  '2020-12-11 20:27:57',  ''),
-    (33,  'amazon.com', 0,  '2020-12-11 20:27:55',  ''),
-    (34,  'youtube.com',  0,  '2020-12-11 20:28:03',  ''),
-    (45,  'lwn.net',  0,  '2020-12-11 20:28:06',  ''),
-    (46,  'facebook.com', 0,  '2020-12-11 20:28:10',  ''),
-    (47,  'forbes.com', 0,  '2020-12-11 20:28:14',  ''),
-    (48,  'slate.com',  0,  '2020-12-11 20:28:15',  ''),
-    (49,  'paulgraham.com', 0,  '2020-12-11 20:28:13',  ''),
-    (50,  'anandtech.com',  0,  '2020-12-11 20:28:19',  ''),
-    (59,  'jacquesmattheij.com',  0,  '2020-12-11 23:00:55',  ''),
-    (60,  'cbc.ca', 0,  '2020-12-11 23:01:10',  ''),
-    (61,  'cnbc.com', 0,  '2020-12-11 23:01:19',  ''),
-    (62,  '37signals.com',  0,  '2020-12-11 23:01:02',  ''),
-    (63,  'phys.org', 0,  '2020-12-11 23:01:08',  ''),
-    (64,  'torrentfreak.com', 0,  '2020-12-11 23:01:12',  ''),
-    (65,  'zdnet.com',  0,  '2020-12-11 23:01:18',  ''),
-    (66,  'theregister.co.uk',  0,  '2020-12-11 23:01:12',  ''),
-    (67,  'acm.org',  0,  '2020-12-11 23:01:15',  ''),
-    (68,  'daringfireball.net', 0,  '2020-12-11 23:01:19',  ''),
-    (69,  'stackoverflow.com',  0,  '2020-12-11 23:01:20',  ''),
-    (70,  'stackexchange.com',  0,  '2020-12-11 23:01:23',  '')
+  ALTER TABLE sites AUTO_INCREMENT = 1;
+
+  INSERT INTO \`sites\` (\`url\`, \`crawled\`, \`crawlTime\`, \`error\`) VALUES
+    ('wsj.com',  0,  '2020-12-11 20:27:29',  ''),
+    ('washingtonpost.com', 0,  '2020-12-11 20:27:32',  ''),
+    ('wordpress.com',  0,  '2020-12-11 20:27:29',  ''),
+    ('wired.com',  0,  '2020-12-11 20:27:32',  ''),
+    ('reuters.com',  0,  '2020-12-11 20:27:31',  ''),
+    ('mozilla.org',  0,  '2020-12-11 20:27:30',  ''),
+    ('npr.org',  0,  '2020-12-11 20:27:37',  ''),
+    ('newyorker.com',  0,  '2020-12-11 20:27:45',  ''),
+    ('economist.com',  0,  '2020-12-11 20:27:42',  ''),
+    ('wikipedia.org',  0,  '2020-12-11 20:27:39',  ''),
+    ('tumblr.com', 0,  '2020-12-11 20:27:45',  ''),
+    ('nautil.us',  0,  '2020-12-11 20:27:56',  ''),
+    ('ycombinator.com',  0,  '2020-12-11 20:27:54',  ''),
+    ('apple.com',  0,  '2020-12-11 20:27:49',  ''),
+    ('arxiv.org',  0,  '2020-12-11 20:27:57',  ''),
+    ('amazon.com', 0,  '2020-12-11 20:27:55',  ''),
+    ('youtube.com',  0,  '2020-12-11 20:28:03',  ''),
+    ('lwn.net',  0,  '2020-12-11 20:28:06',  ''),
+    ('facebook.com', 0,  '2020-12-11 20:28:10',  ''),
+    ('forbes.com', 0,  '2020-12-11 20:28:14',  ''),
+    ('slate.com',  0,  '2020-12-11 20:28:15',  ''),
+    ('paulgraham.com', 0,  '2020-12-11 20:28:13',  ''),
+    ('anandtech.com',  0,  '2020-12-11 20:28:19',  ''),
+    ('jacquesmattheij.com',  0,  '2020-12-11 23:00:55',  ''),
+    ('cbc.ca', 0,  '2020-12-11 23:01:10',  ''),
+    ('cnbc.com', 0,  '2020-12-11 23:01:19',  ''),
+    ('37signals.com',  0,  '2020-12-11 23:01:02',  ''),
+    ('phys.org', 0,  '2020-12-11 23:01:08',  ''),
+    ('torrentfreak.com', 0,  '2020-12-11 23:01:12',  ''),
+    ('zdnet.com',  0,  '2020-12-11 23:01:18',  ''),
+    ('theregister.co.uk',  0,  '2020-12-11 23:01:12',  ''),
+    ('acm.org',  0,  '2020-12-11 23:01:15',  ''),
+    ('daringfireball.net', 0,  '2020-12-11 23:01:19',  ''),
+    ('stackoverflow.com',  0,  '2020-12-11 23:01:20',  ''),
+    ('stackexchange.com',  0,  '2020-12-11 23:01:23',  '')
 `;
 
 const promisses = [];
