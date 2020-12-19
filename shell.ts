@@ -151,8 +151,7 @@ const launch = (async (c: number) => {
 
 										resolve(fpages[key]);
 
-										const sql = `update sites set crawled = 1 and error = '' where url = "${fpages[key].url}"`;
-										console.log(constants.shell.colors.dim, sql);
+										const sql = `update sites set crawled = 1, error = '' where url = "${fpages[key].url}"`;
 										dbSql.query(sql);
 
 		                swapTab(
