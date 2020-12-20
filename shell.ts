@@ -134,7 +134,7 @@ const launch = (async (c: number) => {
 		   	});
 		  }
 
-		  const extractPromise = (npage: Npage): Promise<Npage> => {
+		  const extractPromise = async (npage: Npage): Promise<Npage> => {
 		  	return new Promise(async (resolve, reject) => {
           let theExtract: any = {
           	title: '',
@@ -186,7 +186,7 @@ const launch = (async (c: number) => {
 					  		npage = await browser.newPage(npage.url, npage.index);
 					  	}
 
-              await resolve(npage);
+              resolve(npage);
 						} catch (e) {
 							console.log(e);
 						}
@@ -201,7 +201,7 @@ const launch = (async (c: number) => {
 					  	npage = await browser.newPage(npage.url, npage.index);
 				  	}
 
-            await reject(npage);
+            reject(npage);
           }
 				});
 		  }
@@ -226,8 +226,34 @@ const launch = (async (c: number) => {
 
 			console.log(`...starting with: ${promisses.length} tabs`);
 
-			// current npage
-			let cnpage: Npage;
+			const shcedulePage = async (npage: Npage, index: number) => {
+				processed++;
+
+				// Fetch more urls as needed
+				if(urls.length <= tabs) (await sqlUrls(1)).map(r => { urls.push(r) });
+
+				// Check if the end...
+				if (urls.length > 0) {
+	  			console.log(`Swapping tab(${index}) - npage(${npage.index}) - ${npage.url} -> ${urls[0]}\n`);
+
+		  		npage.url = urls[0];
+		  		promisses[index] = extractPromise(npage);
+
+		  		// ... wait for my recursion
+					await recurse(index);
+				}
+
+				// ... the end, wait for the rest of possible promisses
+				if (urls.length == 0 || processed >= sites) {
+					console.log(`Waiting for last promisses... seconds elapsed = ${Math.floor((Date.now() - cstime) / 1000)} (${Date.now() - cstime}ms)`);
+					await wait(60000);
+					await browser.close();
+					process.exit();
+				}
+
+				// if not the end ... and splice
+				urls.splice(0, 1);
+			};
 
 			const recurse = async (index: number) => {
 				promisses[index]
@@ -237,41 +263,13 @@ const launch = (async (c: number) => {
           	` - goto time: ${npage.extract.goto.end - npage.extract.goto.start}` +
           	` - dequeue time: ${Date.now() - npage.extract.goto.start}`);
 
-					cnpage = npage;
+					await shcedulePage(npage, npage.index);
 				})
 				.catch(async npage => {
 					failed++;
-					console.log(`Failed(${failed}): ${npage.url} - ${npage.message}`);
+					console.log(`Failed(${failed}): ${npage.url} - ${npage.error}`);
 
-					cnpage = npage;
-				})
-				.finally(async () => {
-					processed++;
-
-					// Fetch more urls as needed
-					if(urls.length <= tabs) (await sqlUrls(1)).map(r => { urls.push(r) });
-
-					// Check if the end...
-					if (urls.length > 0) {
-		  			console.log(`Swapping tab(${index}) - npage(${cnpage.index}) - ${cnpage.url} -> ${urls[0]}\n`);
-
-			  		cnpage.url = urls[0];
-			  		promisses[index] = extractPromise(cnpage);
-
-			  		// ... wait for my recursion
-						await recurse(index);
-					}
-
-					// ... the end, wait for the rest of possible promisses
-					if (urls.length == 0 || processed >= sites) {
-						console.log(`Waiting for last promisses... seconds elapsed = ${Math.floor((Date.now() - cstime) / 1000)} (${Date.now() - cstime}ms)`);
-						await wait(60000);
-						await browser.close();
-						process.exit();
-					}
-
-					// if not the end ... and splice
-					urls.splice(0, 1);
+					await shcedulePage(npage, npage.index);
 				})
 			}
 
