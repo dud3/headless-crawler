@@ -101,7 +101,7 @@ const launch = (async (c: number) => {
 								condition += " OR (`error` LIKE '%Error: Protocol error%') ";
 							break;
 
-							case "eoe":	 
+							case "eoe":
 								condition += " "; // todo: ...
 							break;
 						}
@@ -116,7 +116,7 @@ const launch = (async (c: number) => {
 			  		const ids = rows.map(r => r.id).join(',');
 			  		if (ids.length > 0) {
 			  			const idsql = `update sites set locked = 1 where id in(${ids})`;
-			  		
+
 				  		dbSql.query(idsql, async (err) => {
 				   			resolve(rows.map(row => row.url) || []);
 				   		});
@@ -193,7 +193,7 @@ const launch = (async (c: number) => {
 							await browser.closePage(npage);
 					  	npage = await browser.newPage(npage.url, npage.index);
 				  	}
-				  	
+
             await reject(npage);
           }
 				});
@@ -217,51 +217,50 @@ const launch = (async (c: number) => {
 			const promisses: Array<Promise<Npage>> = [];
 			pages.map(npage => { promisses.push(extractPromise(npage)); });
 
-			const scheduleTabs = async (npage: Npage) => {
-				console.log('scheduleTabs');
+			const scheduleTabs = async (npage: Npage, index: number) => {
+				if(urls.length <= tabs) (await sqlUrls(1)).map(r => { urls.push(r) });
+
+				if (urls.length == 0 || processed >= sites) {
+					console.log(`Waiting for last promisses... seconds elapsed = ${Math.floor((Date.now() - cstime) / 1000)} (${Date.now() - cstime}ms)`);
+				}
+
 				if (urls.length > 0) {
 		  		const surl = urls.splice(0, 1);
-	  			console.log(`Swapping tabs(${processed}) - ${npage.url} -> ${surl[0]}`);
+	  			console.log(`Swapping tabs(${processed}) - ${npage.url} -> ${surl[0]}\n`);
 		  		npage.url = surl[0];
 
-					// promisses.slice(0, 1);
-		  		promisses.push(extractPromise(npage));
+					// promisses.slice(npage.index, 1);
+					console.log(index);
+		  		promisses[index] = extractPromise(npage);
 		  	}
 			};
 
-			const recurse = async () => {
-				if (promisses.length > 0) {
-					promisses[processed]
-					.then(async npage => {
-						success++;
-						console.log(`Resolved(${success}): ${npage.url}` +
-	          	` - goto time: ${npage.extract.goto.end - npage.extract.goto.start}` +
-	          	` - dequeue time: ${Date.now() - npage.extract.goto.start}`);
+			console.log(promisses);
 
-						await scheduleTabs(npage);
-					})
-					.catch(async npage => {
-						failed++;
-						console.log(`Failed(${failed}): ${npage.url} - ${npage.message}`);
-						await scheduleTabs(npage);
-					})
-					.finally(async () => {
-						processed++;
+			const recurse = async (index: number) => {
+				promisses[index]
+				.then(async npage => {
+					success++;
+					console.log(`Resolved(${success}): ${npage.url}` +
+          	` - goto time: ${npage.extract.goto.end - npage.extract.goto.start}` +
+          	` - dequeue time: ${Date.now() - npage.extract.goto.start}`);
 
-						console.log("finally");
+					await scheduleTabs(npage, index);
+					recurse(index);
+				})
+				.catch(async npage => {
+					failed++;
+					console.log(`Failed(${failed}): ${npage.url} - ${npage.message}`);
 
-						if(urls.length <= tabs) (await sqlUrls(1)).map(r => { urls.push(r) });
-
-						if (urls.length == 0 || processed >= sites) {
-							console.log(`Waiting for last promisses... seconds elapsed = ${Math.floor((Date.now() - cstime) / 1000)} (${Date.now() - cstime}ms)`);
-						}
-
-						if (urls.length > 0) await recurse(); 						
-					})
-				}
+					await scheduleTabs(npage, index);
+					recurse(index);
+				})
+				.finally(async () => {
+					processed++;
+				})
 			}
 
-			recurse();
+			for (let i = 0; i < promisses.length; i++) { recurse(i); }
 		});
 	}
 });
