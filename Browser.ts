@@ -13,7 +13,7 @@ export class Npage {
     url: string,
     title: string,
     blockedRequests: number,
-    totalRequests: number, 
+    totalRequests: number,
     canvasFingerprint: number,
     keyLogging: number,
     sessionRecording: number,

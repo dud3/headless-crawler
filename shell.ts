@@ -1,4 +1,4 @@
-import { sparseInt } from "./utils";
+import { sparseInt, wait } from "./utils";
 const { addSlashes, stripSlashes } = require('slashes')
 
 import constants from './constants'
@@ -39,7 +39,7 @@ const argv = {
 		f: v => sparseInt(v, 60000)
 	},
   "--syncerrors": {
-      v: "" as any, // epte,oe
+      v: "" as any, // all,epte,oe
       f: (v) => v.split(',').map(c => c)
   },
   "--synctimeouts": {
@@ -95,13 +95,20 @@ const launch = (async (c: number) => {
 
 		  		let condition = "(crawled = 0 and length(error) = 0)";
 
+		  		let locked = " and (locked = 0) ";
 					argv['--syncerrors'].v.map((c) => {
 						switch (c) {
+							case "all":
+								locked = "";
+								condition += " OR (length(error) > 0) ";
+								break;
 							case "epte":
+								locked = "";
 								condition += " OR (`error` LIKE '%Error: Protocol error%') ";
 							break;
 
 							case "eoe":
+								locked = "";
 								condition += " "; // todo: ...
 							break;
 						}
@@ -109,7 +116,7 @@ const launch = (async (c: number) => {
 
           if(argv['--synctimeouts'].v) condition += " OR `error` LIKE '%TimeoutError%' ";
 
-          const sql = `select * from sites where ${condition} and (locked = 0) order by id asc limit ${take}`
+          const sql = `select * from sites where ${condition} ${locked} order by id asc limit ${take}`
           if (argv['--debug'].v) console.log(sql);
 
 			  	dbSql.query(sql, async (err, rows) => {
@@ -152,7 +159,7 @@ const launch = (async (c: number) => {
 
 						theExtract = {
 							url: extract.url,
-	          	title: extract.title || '',
+	          	title: addSlashes(extract.title) || '',
 	            blockedRequests: extract.blocked.length,
 	            totalRequests: extract.requests.amount,
 	            canvasFingerprint: 0,
@@ -217,25 +224,10 @@ const launch = (async (c: number) => {
 			const promisses: Array<Promise<Npage>> = [];
 			pages.map(npage => { promisses.push(extractPromise(npage)); });
 
-			const scheduleTabs = async (npage: Npage, index: number) => {
-				if(urls.length <= tabs) (await sqlUrls(1)).map(r => { urls.push(r) });
+			console.log(`...starting with: ${promisses.length} tabs`);
 
-				if (urls.length == 0 || processed >= sites) {
-					console.log(`Waiting for last promisses... seconds elapsed = ${Math.floor((Date.now() - cstime) / 1000)} (${Date.now() - cstime}ms)`);
-				}
-
-				if (urls.length > 0) {
-		  		const surl = urls.splice(0, 1);
-	  			console.log(`Swapping tabs(${processed}) - ${npage.url} -> ${surl[0]}\n`);
-		  		npage.url = surl[0];
-
-					// promisses.slice(npage.index, 1);
-					console.log(index);
-		  		promisses[index] = extractPromise(npage);
-		  	}
-			};
-
-			console.log(promisses);
+			// current npage
+			let cnpage: Npage;
 
 			const recurse = async (index: number) => {
 				promisses[index]
@@ -245,21 +237,45 @@ const launch = (async (c: number) => {
           	` - goto time: ${npage.extract.goto.end - npage.extract.goto.start}` +
           	` - dequeue time: ${Date.now() - npage.extract.goto.start}`);
 
-					await scheduleTabs(npage, index);
-					recurse(index);
+					cnpage = npage;
 				})
 				.catch(async npage => {
 					failed++;
 					console.log(`Failed(${failed}): ${npage.url} - ${npage.message}`);
 
-					await scheduleTabs(npage, index);
-					recurse(index);
+					cnpage = npage;
 				})
 				.finally(async () => {
 					processed++;
+
+					// Fetch more urls as needed
+					if(urls.length <= tabs) (await sqlUrls(1)).map(r => { urls.push(r) });
+
+					// Check if the end...
+					if (urls.length > 0) {
+		  			console.log(`Swapping tab(${index}) - npage(${cnpage.index}) - ${cnpage.url} -> ${urls[0]}\n`);
+
+			  		cnpage.url = urls[0];
+			  		promisses[index] = extractPromise(cnpage);
+
+			  		// ... wait for my recursion
+						await recurse(index);
+					}
+
+					// ... the end, wait for the rest of possible promisses
+					if (urls.length == 0 || processed >= sites) {
+						console.log(`Waiting for last promisses... seconds elapsed = ${Math.floor((Date.now() - cstime) / 1000)} (${Date.now() - cstime}ms)`);
+						await wait(60000);
+						await browser.close();
+						process.exit();
+					}
+
+					// if not the end ... and splice
+					urls.splice(0, 1);
 				})
 			}
 
+			// kickstart
 			for (let i = 0; i < promisses.length; i++) { recurse(i); }
 		});
 	}
