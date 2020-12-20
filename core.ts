@@ -362,12 +362,6 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
 
     extract.reports = reports;
 
-    try {
-      clearFile(outFilePath);
-    } catch(e) {
-      console.log(e); // todo: handle me
-    }
-
     return extract;
   });
 }

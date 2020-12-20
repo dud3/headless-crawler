@@ -65,22 +65,23 @@ const instances = [];
 const launch = (async (c: number) => {
 	for (let i = 0; i < c; i++) {
 		instances.push(async () => {
-		  const sqlExtract = async (theExtract, extract, fpage) => {
+
+		  const sqlExtract = async (extract, fpage) => {
 
 		  	try {
 			  	const sql = `
 						insert into extracts set
 			      url = '${extract.url}',
-			      title = '${addSlashes(extract.title).slice(0, 200)}',
-			      blockedRequests = ${theExtract.blocked_amount},
-			      totalRequests = ${extract.requests.amount},
-			      canvasFingerprint = ${theExtract.canvas_fingerprinters},
-			      keyLogging = ${theExtract.key_logging},
-			      sessionRecording = ${theExtract.session_recorders},
-			      totalSize = ${extract.pageSize},
-			      contentSize = ${extract.readability.length || 0},
-			      contentReaderable = 1,
-			      loadSpeed = ${extract.timing.loadTime}
+			      title = '${extract.title}',
+			      blockedRequests = ${extract.blockedRequests},
+			      totalRequests = ${extract.totalRequests},
+			      canvasFingerprint = ${extract.canvasFingerprint},
+			      keyLogging = ${extract.keyLogging},
+			      sessionRecording = ${extract.sessionRecording},
+			      totalSize = ${extract.totalSize},
+			      contentSize = ${extract.contentSize},
+			      contentReaderable = ${extract.contentReaderable},
+			      loadSpeed = ${extract.loadSpeed}
 			     `
 
 					await dbSql.query(sql, (err) => { if (err) console.log(err); });
@@ -126,95 +127,76 @@ const launch = (async (c: number) => {
 		   	});
 		  }
 
-		  const doEextract = async (fpages: Array<Npage>) => {
-	      const promisses = [];
+		  const extractPromise = (npage: Npage): Promise<Npage> => {
+		  	return new Promise(async (resolve, reject) => {
+          let theExtract: any = {
+          	title: '',
+            blockedRequests: 0,
+            totalRequests: 0,
+            canvasFingerprint: 0,
+            keyLogging: 0,
+            sessionRecording: 0,
+            totalSize: 0,
+            contentSize: 0,
+            contentReaderable: 1,
+            loadSpeed: 0,
+            goto: {
+            	start: 0,
+            	end: 0
+            }
+          };
 
-	      if (urls.length == 0 || processed >= sites) return;
+          try {
+          	// Extraction
+            const extract = await core(npage.blocker, npage.page, "https://" + npage.url, argv["--timeout"].v, argv["--waitfor"].v);
 
-	      for (const key in fpages) {
-					promisses.push(() => {
-						new Promise(async (resolve) => {
+						theExtract = {
+							url: extract.url,
+	          	title: extract.title || '',
+	            blockedRequests: extract.blocked.length,
+	            totalRequests: extract.requests.amount,
+	            canvasFingerprint: 0,
+	            keyLogging: Object.keys(extract.reports.key_logging).length,
+	            sessionRecording: Object.keys(extract.reports.session_recorders).length,
+	            totalSize: extract.pageSize,
+	            contentSize: extract.readability.length || 0,
+	            contentReaderable: 1, // extract.readability == null ? '' : extract.readability,
+	            loadSpeed: extract.timing.loadTime,
+	            goto: {
+	            	start: extract.goto.start,
+	            	end: extract.goto.end
+	            }
+	          };
 
-            	// The page
-            	let npage = fpages[key];
+	          npage.extract = theExtract;
 
-	            const theExtract: any = {
-                canvas_fingerprinters: {},
-                key_logging: {}
-	            };
+						try {
+							await sqlExtract(theExtract, npage);
+							dbSql.query(`update sites set crawled = 1, error = '' where url = "${npage.url}"`);
 
-              try {
-              	// Extraction
-                const extract = await core(npage.blocker, npage.page, "https://" + npage.url, argv["--timeout"].v, argv["--waitfor"].v);
+							if (argv['--closetab'].v) {
+								await browser.closePage(npage);
+					  		npage = await browser.newPage(npage.url, npage.index);
+					  	}
 
-								theExtract.canvas_fingerprinters = extract.reports.canvas_fingerprinters.fingerprinters.length;
-								// theExtract.canvas_font_fingerprinters = Object.keys(extract.reports.canvas_font_fingerprinters.canvas_font).length;
-								theExtract.key_logging = Object.keys(extract.reports.key_logging).length;
-								theExtract.session_recorders = Object.keys(extract.reports.session_recorders).length;
-								theExtract.blocked_amount = extract.blocked.length;
-								extract.readability = extract.readability == null ? '' : extract.readability;
-								extract.title = extract.title || '';
+              await resolve(npage);
+						} catch (e) {
+							console.log(e);
+						}
 
-								try {
-									await sqlExtract(theExtract, extract, npage);
-									dbSql.query(`update sites set crawled = 1, error = '' where url = "${npage.url}"`);
+          } catch (err) {
+          	npage.error = err.message;
 
-									if (argv['--closetab'].v) {
-										await browser.closePage(npage);
-							  		npage = await browser.newPage(npage.url, npage.index);
-							  	}
+          	dbSql.query(`update sites set crawled = 0, error="${addSlashes(err.message)}" where url = "${npage.url}"`);
 
-									processed++;
-	                await swapTab(
-	                	npage,
-	                	urls[0],
-	                	`Resolved(${processed}): ${npage.url}` +
-	                	` - goto time: ${extract.goto.end - extract.goto.start}` +
-	                	` - dequeue time: ${Date.now() - extract.goto.start}`
-	                );
-	                await resolve();
-									await doEextract([npage]);
-								} catch (e) {
-									console.log(e);
-								}
-
-              } catch (err) {
-              	dbSql.query(`update sites set crawled = 0, error="${addSlashes(err.message)}" where url = "${npage.url}"`);
-								if (argv['--closetab'].v) {
-									await browser.closePage(npage);
-							  	npage = await browser.newPage(npage.url, npage.index);
-						  	}
-						  	
-						  	failed++;
-                await swapTab(npage, urls[0], `Failed(${failed}): ${npage.url} - ${err.message}`);
-                await resolve();
-								await doEextract([npage]);
-              }
-						})
-					});
-	      }
-
-	      await Promise.all(promisses.map(p => p()));
-		  }
-
-		  const swapTab = async (fpage, url, message = "") => {
-				if(urls.length <= tabs) {
-					(await sqlUrls(take)).map(r => { urls.push(r) });
-				}
-
-				if (urls.length == 0 || processed >= sites) {
-					console.log("Keep alive for final promisses...");
-					console.log(`Crawl ended: seconds elapsed = ${Math.floor((Date.now() - cstime) / 1000)} (${Date.now() - cstime}ms)`);
-					// browser.close();
-					// process.exit();
-				}
-
-		  	console.log(`Instance(${i}) - ${message} \n`);
-
-		  	if (urls.length > 0) {
-		  		urls.splice(0, 1);
-		  		fpage.url = url;
-		  	}
+						if (argv['--closetab'].v) {
+							await browser.closePage(npage);
+					  	npage = await browser.newPage(npage.url, npage.index);
+				  	}
+				  	
+            await reject(npage);
+          }
+				});
 		  }
 
 		  const browser = new Browser({ id: "ys", blocker: true, headless: argv['--headless'].v });
@@ -226,14 +208,60 @@ const launch = (async (c: number) => {
 			let take: number = sites > argv['--tabs'].v ? argv['--tabs'].v : sites;
 			let skip: number = i * take;
 			let processed: number = 0;
+			let success: number = 0;
 			let failed: number = 0;
-			let urls: Array<string> = await sqlUrls(take); // ['alexcheuk.com'];
-			const pages: Array<Npage> = await browser.newPages(urls.slice(0, tabs));
-			const cstime = Date.now(); // after pages have been assigned but not processed
+			let urls: Array<string> = await sqlUrls(take);
+			const pages: Array<Npage> = await browser.newPages(urls.splice(0, tabs));
+			const cstime = Date.now();
 
-			take = 1;
+			const promisses: Array<Promise<Npage>> = [];
+			pages.map(npage => { promisses.push(extractPromise(npage)); });
 
-			await doEextract(pages);
+			const scheduleTabs = async (npage: Npage) => {
+				console.log('scheduleTabs');
+				if (urls.length > 0) {
+		  		const surl = urls.splice(0, 1);
+	  			console.log(`Swapping tabs(${processed}) - ${npage.url} -> ${surl[0]}`);
+		  		npage.url = surl[0];
+
+					// promisses.slice(0, 1);
+		  		promisses.push(extractPromise(npage));
+		  	}
+			};
+
+			const recurse = async () => {
+				if (promisses.length > 0) {
+					promisses[processed]
+					.then(async npage => {
+						success++;
+						console.log(`Resolved(${success}): ${npage.url}` +
+	          	` - goto time: ${npage.extract.goto.end - npage.extract.goto.start}` +
+	          	` - dequeue time: ${Date.now() - npage.extract.goto.start}`);
+
+						await scheduleTabs(npage);
+					})
+					.catch(async npage => {
+						failed++;
+						console.log(`Failed(${failed}): ${npage.url} - ${npage.message}`);
+						await scheduleTabs(npage);
+					})
+					.finally(async () => {
+						processed++;
+
+						console.log("finally");
+
+						if(urls.length <= tabs) (await sqlUrls(1)).map(r => { urls.push(r) });
+
+						if (urls.length == 0 || processed >= sites) {
+							console.log(`Waiting for last promisses... seconds elapsed = ${Math.floor((Date.now() - cstime) / 1000)} (${Date.now() - cstime}ms)`);
+						}
+
+						if (urls.length > 0) await recurse(); 						
+					})
+				}
+			}
+
+			recurse();
 		});
 	}
 });
