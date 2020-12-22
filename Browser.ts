@@ -9,6 +9,24 @@ export class Npage {
   blocker?: PuppeteerBlocker;
   url: string;
   urlid: number;
+  extract: {
+    url: string,
+    title: string,
+    blockedRequests: number,
+    totalRequests: number,
+    canvasFingerprint: number,
+    keyLogging: number,
+    sessionRecording: number,
+    totalSize: number,
+    contentSize: number
+    contentReaderable: number,
+    loadSpeed: number,
+    goto: {
+      start: number,
+      end: number
+    }
+  };
+  error: string
 }
 
 export class Config {

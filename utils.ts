@@ -152,6 +152,6 @@ export const getHashedValues = (algorithm, object) => {
   }, {});
 };
 
-// Int
-
 export const sparseInt = (v, d) => Number.isInteger(parseInt(v)) ? parseInt(v) : d;
+
+export const wait = (t) => new Promise((resolve) => { setTimeout(() => { resolve(t); }, t) });
