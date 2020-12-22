@@ -232,7 +232,7 @@ const launch = (async (c: number) => {
         // Fetch more urls as needed
         if(urls.length <= tabs) (await sqlUrls(1)).map(r => { urls.push(r) });
 
-				// Check if the end...
+        // Check if the end...
         if (urls.length > 0) {
           console.log(`Swapping tab(${index}) - npage(${npage.index}) - ${npage.url} -> ${urls[0]}\n`);
 
