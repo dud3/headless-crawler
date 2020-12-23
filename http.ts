@@ -1,4 +1,6 @@
-import Browser from './Browser';
+import dbSql from "./db-sql";
+
+import Browser, { Npage } from './Browser';
 
 import core from "./core";
 import readability from "./readability";
@@ -40,44 +42,27 @@ app.use(bodyParser.raw());
     res.send("The rest api layer of the extractor, api docs coming soon...");
   });
 
-  app.post('/url', async function (req: any, res: any) {
-    let blocked: Array<any> = [];
-    let thextract: any = {};
+  app.post('/api/v0/extracts/get', function (req: any, res: any) {
+    console.log(req.body.urls);
 
-    await core([req.body.url], 30000, true);
+    const condition = req.body.urls.map(u => `(url LIKE '%${u}%')`).join(' or ');
+    const sql = `select * from extracts where 1 and (${condition}) `;
+    console.log(sql);
 
-    // todo: remove me
-
-    thextract.canvas_fingerprinters = thextract.reports.canvas_fingerprinters.fingerprinters.length;
-    thextract.canvas_font_fingerprinters = Object.keys(thextract.reports.canvas_font_fingerprinters.canvas_font).length;
-    thextract.key_logging = Object.keys(thextract.reports.key_logging).length;
-    thextract.session_recorders = Object.keys(thextract.reports.session_recorders).length;
-
-    delete thextract.reports;
-
-    thextract.blocked = {} as any;
-    thextract.blocked.data = blocked.map(b => { return { tabId: b.tabId, type: b.type, url: b.url } });
-    thextract.blocked.amount = thextract.blocked.data.length;
-
-    res.json(thextract);
+    dbSql.query(sql, (err, rows) => { res.json(rows); });
   });
 
-  // todo: remove me
-
   app.post('/extractor/readability', async function (req: any, res: any) {
-    const pages = await browser.assignPages([req.body.url]);
-    const fpages = pages.filter(p => p.url.length > 0);
+    const pages: Array<Npage> = await browser.newPages([req.body.url]);
 
-    console.log(fpages);
-
-    for (const key in fpages) {
-      const extract = await readability.main(fpages[key]);
+    pages.map(async page => {
+      const extract = await readability.main(page);
 
       res.json(extract);
 
-      await browser.close(fpages[key].page);
+      await browser.closePage(page);
       await browser.newPages(1);
-    }
+    });
   });
 
   http.listen(port, function() {

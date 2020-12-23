@@ -10,8 +10,12 @@ app.set("port", port);
 let http = require("http").Server(app);
 let io = require("socket.io")(http);
 
-app.get("/http-client", (req: any, res: any) => {
+app.get("/http-client-core", (req: any, res: any) => {
   res.sendFile(path.resolve("./client/test-http-server.html"));
+});
+
+app.get("/http-client-extracts", (req: any, res: any) => {
+  res.sendFile(path.resolve("./client/test-http-extracts.html"));
 });
 
 app.get("/socket-client", (req: any, res: any) => {

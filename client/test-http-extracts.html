@@ -1,0 +1,121 @@
+<html>
+<header>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@quasar/extras/material-icons/material-icons.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/quasar/dist/quasar.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quasar/dist/quasar.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.0/axios.js" integrity="sha512-bYkaBWaFtfPIMYt9+CX/4DWgfrjcHinjerNYxQmQx1VM76eUsPPKZa5zWV8KksVkBF/DaHSADCwil2J5Uq2ctA==" crossorigin="anonymous"></script>
+</header>
+
+<body>
+  <div id="q-app">
+    <q-layout view="hHh lpR fFf">
+      <q-header elevated class="bg-primary text-white">
+        <q-toolbar>
+          <q-toolbar-title>
+            Extractor client
+          </q-toolbar-title>
+        </q-toolbar>
+      </q-header>
+
+      <q-page-container>
+        <q-form @submit="extract">
+          <div class="row q-pt-md justify-center">
+            <div class="col-6">
+               <q-select
+                  label="e.x: domain.com them click Enter"
+                  filled
+                  v-model="urls"
+                  use-input
+                  use-chips
+                  multiple
+                  hide-dropdown-icon
+                  input-debounce="0"
+                  new-value-mode="add"
+                  style="width: 100%"
+                />
+            </div>
+          </div>
+          <div class="row justify-center q-pa-md">
+            <div class="col-1">
+              <q-btn type="submit" label="Fetch" :disable="loading || urls.length == 0" :loading="loading" style="height: 100%" outlined color="primary" size="lg" />
+            </div>
+          </div>
+        </q-form>
+
+        <div class="row justify-center">
+          <div class="col-10">
+            <q-list bordered class="rounded-borders" v-show="data.length > 0">
+              <q-expansion-item
+                expand-separator
+                icon="archive"
+                :label="'Blocked ads and trackers (' + data.length + ')'"
+              >
+                <q-card>
+                  <q-card-section>
+                    <q-list bordered separator>
+                      <q-item clickable v-ripple v-for="(item, index) in data" :key="index" class="ellipsis">
+                        <q-item-section class="ellipsis"><span class="text-bold">
+                          <pre>{{ item }}</pre>
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+            </q-list>
+          </div>
+        </div>
+      </q-page-container>
+
+
+      <q-footer elevated class="bg-grey-8 text-white">
+        <q-toolbar>
+          <q-toolbar-title style="font-size: 12px;">
+            Version: 0.0.1
+          </q-toolbar-title>
+        </q-toolbar>
+      </q-footer>
+    </q-layout>
+  </div>
+
+  <script>
+  //
+  // note: this is only a test client, will be re-written in nodejs
+  //
+  new Vue({
+    el: '#q-app',
+    data: function () {
+      return {
+        urls: [],
+        loading: false,
+        data: []
+      }
+    },
+    methods: {
+      extract: function () {
+        const api = 'http://localhost:3001'; // todo: handle me properly
+
+        this.data = [];
+        this.loading = true;
+
+        axios.post(api + '/api/v0/extracts/get', { urls: this.urls }).then((r) => {
+          this.data = r.data;
+        }).catch((e) => {
+          this.loading = false;
+          this.$q.notify({
+            position: 'top',
+            color: 'red',
+            message: "Something went wrong or server is down!"
+          })
+
+          console.log(e); // todo: handle me
+        }).finally(() => {
+          this.loading = false
+        })
+      }
+    }
+  })
+  </script>
+</body>
+</html>
