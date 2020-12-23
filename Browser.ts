@@ -53,7 +53,7 @@ class Browser {
   constructor ({
     id = 'x',
     device = puppeteer.devices["iPhone X"],
-    headless = false,
+    headless = true,
     width = 1200,
     height = 600,
     blocker = false,
