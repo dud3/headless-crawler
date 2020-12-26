@@ -152,7 +152,7 @@ const launch = (async (c: number) => {
             theExtract.originUrl = addSlashes(npage.url.url);
             theExtract.url = extract.url;
             theExtract.title = addSlashes(extract.title) || '',
-            theExtract.blockedRequests = extract.blocked.length,
+            theExtract.blockedRequests = (extract.blocked && extract.blocked.length) || 0,
             theExtract.totalRequests = extract.requests.amount,
             theExtract.canvasFingerprint = 0,
             theExtract.keyLogging = Object.keys(extract.reports.key_logging).length,
