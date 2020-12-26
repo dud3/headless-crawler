@@ -3,30 +3,42 @@ import { fullLists, PuppeteerBlocker, Request } from '@cliqz/adblocker-puppeteer
 import { promises as fs } from 'fs';
 import fetch from 'node-fetch';
 
+export interface Url { // scheme://host:port/path?query
+  id?: string;
+  url: string;
+}
+
+export class Extract {
+  referenceId: string = '';
+  originUrl: string = '';
+  url: string = '';
+  title: string = '';
+  blockedRequests: number = 0;
+  totalRequests: number = 0;
+  canvasFingerprint: number = 0;
+  keyLogging: number = 0;
+  sessionRecording: number = 0;
+  totalSize: number = 0;
+  contentSize: number = 0;
+  contentReaderable: number = 0;
+  loadSpeed: number = 0;
+  goto: {
+    start: number
+    end: number
+  } = {
+    start: 0,
+    end: 0
+  };
+  error: string = '';
+}
+
 export class Npage {
   index: number;
   page: Page;
   blocker?: PuppeteerBlocker;
-  url: string;
-  urlid: number;
-  extract: {
-    url: string,
-    title: string,
-    blockedRequests: number,
-    totalRequests: number,
-    canvasFingerprint: number,
-    keyLogging: number,
-    sessionRecording: number,
-    totalSize: number,
-    contentSize: number
-    contentReaderable: number,
-    loadSpeed: number,
-    goto: {
-      start: number,
-      end: number
-    }
-  };
-  error: string
+  url: Url;
+  extract: Extract;
+  error: string;
 }
 
 export class Config {
@@ -112,7 +124,7 @@ class Browser {
     );
   }
 
-  async newPage (url, i = 0) {
+  async newPage (url: Url, i: number = 0) {
     const npage: Npage = new Npage();
     const page = await this.browser.newPage();
 
@@ -133,7 +145,7 @@ class Browser {
     return npage;
   }
 
-  async newPages (urls) {
+  async newPages (urls: Array<Url>) {
     const promisses = [];
     for (let i = 0; i < urls.length; i++) {
       promisses.push(new Promise<Npage>(async (resolve) => {

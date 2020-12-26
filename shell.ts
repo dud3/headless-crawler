@@ -6,7 +6,7 @@ import constants from './constants'
 import puppeteer, { LoadEvent, Page, EmulateOptions } from "puppeteer";
 import core from "./core";
 
-import Browser, { Npage } from './Browser';
+import Browser, { Npage, Url, Extract } from './Browser';
 import dbSql from "./db-sql";
 
 const argv = {
@@ -66,22 +66,26 @@ const launch = (async (c: number) => {
   for (let i = 0; i < c; i++) {
     instances.push(async () => {
 
-      const sqlExtract = async (extract, fpage) => {
+      const sqlExtract = async (npage) => {
+        const extract = npage.extract;
 
-      try {
-        const sql = `
-          insert into extracts set
-          url = '${extract.url}',
-          title = '${extract.title}',
-          blockedRequests = ${extract.blockedRequests},
-          totalRequests = ${extract.totalRequests},
-          canvasFingerprint = ${extract.canvasFingerprint},
-          keyLogging = ${extract.keyLogging},
-          sessionRecording = ${extract.sessionRecording},
-          totalSize = ${extract.totalSize},
-          contentSize = ${extract.contentSize},
-          contentReaderable = ${extract.contentReaderable},
-          loadSpeed = ${extract.loadSpeed}
+        try {
+          const sql = `
+            insert into extracts set
+            referenceId = '${extract.referenceId}',
+            originUrl = '${extract.originUrl}',
+            url = '${extract.url}',
+            title = '${extract.title}',
+            blockedRequests = ${extract.blockedRequests},
+            totalRequests = ${extract.totalRequests},
+            canvasFingerprint = ${extract.canvasFingerprint},
+            keyLogging = ${extract.keyLogging},
+            sessionRecording = ${extract.sessionRecording},
+            totalSize = ${extract.totalSize},
+            contentSize = ${extract.contentSize},
+            contentReaderable = ${extract.contentReaderable},
+            loadSpeed = ${extract.loadSpeed},
+            error = '${extract.error}'
         `
 
           await dbSql.query(sql, (err) => { if (err) console.log(err); });
@@ -90,7 +94,7 @@ const launch = (async (c: number) => {
         }
       }
 
-      const sqlUrls = async (take): Promise<Array<string>> => {
+      const sqlUrls = async (take): Promise<Array<Url>> => {
         return new Promise((resolve) => {
 
           let condition = "(crawled = 0 and length(error) = 0)";
@@ -125,7 +129,7 @@ const launch = (async (c: number) => {
               const idsql = `update sites set locked = 1 where id in(${ids})`;
 
               dbSql.query(idsql, async (err) => {
-                resolve(rows.map(row => row.url) || []);
+                resolve(rows.map(row => { return { id: row.id, url: row.url } }) || []);
               });
             } else {
               resolve([]);
@@ -136,50 +140,37 @@ const launch = (async (c: number) => {
 
       const extractPromise = async (npage: Npage): Promise<Npage> => {
         return new Promise(async (resolve, reject) => {
-          let theExtract: any = {
-            title: '',
-            blockedRequests: 0,
-            totalRequests: 0,
-            canvasFingerprint: 0,
-            keyLogging: 0,
-            sessionRecording: 0,
-            totalSize: 0,
-            contentSize: 0,
-            contentReaderable: 1,
-            loadSpeed: 0,
-            goto: {
-              start: 0,
-              end: 0
-            }
-          };
+
+          let theExtract = new Extract;
 
           try {
-          	// Extraction
-            const extract = await core(npage.blocker, npage.page, "https://" + npage.url, argv["--timeout"].v, argv["--waitfor"].v);
 
-            theExtract = {
-              url: extract.url,
-              title: addSlashes(extract.title) || '',
-              blockedRequests: extract.blocked.length,
-              totalRequests: extract.requests.amount,
-              canvasFingerprint: 0,
-              keyLogging: Object.keys(extract.reports.key_logging).length,
-              sessionRecording: Object.keys(extract.reports.session_recorders).length,
-              totalSize: extract.pageSize,
-              contentSize: extract.readability.length || 0,
-              contentReaderable: 1, // extract.readability == null ? '' : extract.readability,
-              loadSpeed: extract.timing.loadTime,
-              goto: {
-                start: extract.goto.start,
-                end: extract.goto.end
-              }
+          	// Extraction
+
+            const extract = await core(npage.blocker, npage.page, "https://" + npage.url.url, argv["--timeout"].v, argv["--waitfor"].v);
+
+            theExtract.originUrl = addSlashes(npage.url.url);
+            theExtract.url = extract.url;
+            theExtract.title = addSlashes(extract.title) || '',
+            theExtract.blockedRequests = extract.blocked.length,
+            theExtract.totalRequests = extract.requests.amount,
+            theExtract.canvasFingerprint = 0,
+            theExtract.keyLogging = Object.keys(extract.reports.key_logging).length,
+            theExtract.sessionRecording = Object.keys(extract.reports.session_recorders).length,
+            theExtract.totalSize = extract.pageSize,
+            theExtract.contentSize = extract.readability.length || 0,
+            theExtract.contentReaderable = 1, // extract.readability == null ? '' : extract.readability,
+            theExtract.loadSpeed = extract.timing.loadTime,
+            theExtract.goto = {
+              start: extract.goto.start,
+              end: extract.goto.end
             };
 
             npage.extract = theExtract;
 
             try {
-              await sqlExtract(theExtract, npage);
-              dbSql.query(`update sites set crawled = 1, error = '' where url = "${npage.url}"`);
+              await sqlExtract(npage);
+              dbSql.query(`update sites set crawled = 1, error = '' where id = "${npage.url.id}"`);
 
               if (argv['--closetab'].v) {
                 await browser.closePage(npage);
@@ -194,7 +185,14 @@ const launch = (async (c: number) => {
           } catch (err) {
             npage.error = err.message;
 
-            dbSql.query(`update sites set crawled = 0, error="${addSlashes(err.message)}" where url = "${npage.url}"`);
+            dbSql.query(`update sites set crawled = 0, error="${addSlashes(err.message)}" where id = "${npage.url.id}"`);
+
+            theExtract.originUrl = addSlashes(npage.url.url);
+            theExtract.error = err.message;
+
+            npage.extract = theExtract;
+
+            await sqlExtract(npage);
 
             if (argv['--closetab'].v) {
               await browser.closePage(npage);
@@ -217,7 +215,8 @@ const launch = (async (c: number) => {
       let processed: number = 0;
       let success: number = 0;
       let failed: number = 0;
-      let urls: Array<string> = await sqlUrls(take);
+      let urls: Array<Url> = await sqlUrls(take);
+
       const pages: Array<Npage> = await browser.newPages(urls.splice(0, tabs));
       const cstime = Date.now();
 
@@ -232,9 +231,11 @@ const launch = (async (c: number) => {
         // Fetch more urls as needed
         if(urls.length <= tabs) (await sqlUrls(1)).map(r => { urls.push(r) });
 
+        console.log(urls);
+
         // Check if the end...
         if (urls.length > 0) {
-          console.log(`Swapping tab(${index}) - npage(${npage.index}) - ${npage.url} -> ${urls[0]}\n`);
+          console.log(`Swapping tab(${index}) - npage(${npage.index}) - ${npage.url.url} -> ${urls[0].url}\n`);
 
           npage.url = urls[0];
           promisses[index] = extractPromise(npage);
@@ -259,7 +260,7 @@ const launch = (async (c: number) => {
         promisses[index]
         .then(async npage => {
           success++;
-          console.log(`Resolved(${success}): ${npage.url}` +
+          console.log(`Resolved(${success}): ${npage.url.url}` +
             ` - goto time: ${npage.extract.goto.end - npage.extract.goto.start}` +
             ` - dequeue time: ${Date.now() - npage.extract.goto.start}`);
 
@@ -267,7 +268,7 @@ const launch = (async (c: number) => {
       	})
         .catch(async npage => {
           failed++;
-          console.log(`Failed(${failed}): ${npage.url} - ${npage.error}`);
+          console.log(`Failed(${failed}): ${npage.url.url} - ${npage.error}`);
 
           await shcedulePage(npage, npage.index);
         })

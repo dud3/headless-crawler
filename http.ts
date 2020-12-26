@@ -45,8 +45,9 @@ app.use(bodyParser.raw());
   app.post('/api/v0/extracts/get', function (req: any, res: any) {
     console.log(req.body.urls);
 
-    const condition = req.body.urls.map(u => `(url LIKE '%${u}%')`).join(' or ');
+    const condition = req.body.urls.map(u => `(url LIKE '%${u}')`).join(' or ');
     const sql = `select * from extracts where 1 and (${condition}) `;
+
     console.log(sql);
 
     dbSql.query(sql, (err, rows) => { res.json(rows); });

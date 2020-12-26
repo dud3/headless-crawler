@@ -1,12 +1,15 @@
 import fetch from 'node-fetch';
 import { writeFileSync } from "fs";
 import sampleSize from "lodash.samplesize";
+
 import puppeteer, { Browser, LoadEvent, Page } from "puppeteer";
 import { fullLists, PuppeteerBlocker, Request } from '@cliqz/adblocker-puppeteer';
+
 import { promises as fs, readFileSync } from 'fs';
 import * as path from "path";
 import * as url from "url";
 import os from "os";
+
 import { getDomain, getSubdomain, parse } from "tldts";
 
 import {
@@ -30,9 +33,7 @@ const { Readability } = require('@mozilla/readability');
 function rexecutor() {
   return new Readability({}, document).parse();
 }
-export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeout: number = 0, waitFor: number = 0, numPages?: number) => {
-  numPages = numPages || 3;
-
+export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeout: number = 0, waitFor: number = 0, numPages: number = 3) => {
   const defaultWaitUntil = "domcontentloaded"; // networkidle2, networkidle0, load, domcontentloaded
 
   const extract = {

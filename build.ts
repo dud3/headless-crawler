@@ -11,6 +11,8 @@ const sql = `
   DROP TABLE IF EXISTS \`extracts\`;
   CREATE TABLE \`extracts\` (
     \`id\` int NOT NULL AUTO_INCREMENT,
+    \`referenceId\` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+    \`originUrl\` text COLLATE utf8mb4_unicode_ci NOT NULL,
     \`url\` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
     \`title\` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
     \`blockedRequests\` int NOT NULL,
@@ -22,7 +24,7 @@ const sql = `
     \`contentSize\` bigint NOT NULL COMMENT 'length of text output of readability in characters',
     \`contentReaderable\` tinyint NOT NULL,
     \`loadSpeed\` double NOT NULL COMMENT 'seconds to document loaded',
-    \`loadFailed\` tinyint unsigned NOT NULL DEFAULT '0',
+    \`error\` text COLLATE utf8mb4_unicode_ci NOT NULL,
     PRIMARY KEY (\`id\`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -54,8 +56,6 @@ const sql = `
 
   ALTER TABLE \`sites\`
     CHANGE \`crawlTime\` \`crawlTime\` timestamp NOT NULL DEFAULT '1970-01-01 01:01:01' AFTER \`crawled\`;
-
-  ALTER TABLE \`extracts\` ADD \`site_id\` INT(11) NOT NULL AFTER \`id\`;
 
   ALTER TABLE sites AUTO_INCREMENT = 1;
 
@@ -94,7 +94,9 @@ const sql = `
     ('acm.org',  0,  '2020-12-11 23:01:15',  ''),
     ('daringfireball.net', 0,  '2020-12-11 23:01:19',  ''),
     ('stackoverflow.com',  0,  '2020-12-11 23:01:20',  ''),
-    ('stackexchange.com',  0,  '2020-12-11 23:01:23',  '')
+    ('stackexchange.com',  0,  '2020-12-11 23:01:23',  ''),
+    ('007names.info',  0,  '2020-12-11 23:01:23',  ''), -- error
+    ('01.media',  0,  '2020-12-11 23:01:23',  '') -- error
 `;
 
 const promisses = [];
