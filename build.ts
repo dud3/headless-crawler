@@ -55,6 +55,8 @@ const sql = `
   ALTER TABLE \`sites\`
     CHANGE \`crawlTime\` \`crawlTime\` timestamp NOT NULL DEFAULT '1970-01-01 01:01:01' AFTER \`crawled\`;
 
+  ALTER TABLE \`extracts\` ADD \`site_id\` INT(11) NOT NULL AFTER \`id\`;
+
   ALTER TABLE sites AUTO_INCREMENT = 1;
 
   INSERT INTO \`sites\` (\`url\`, \`crawled\`, \`crawlTime\`, \`error\`) VALUES
