@@ -91,3 +91,9 @@
 		pm2 start pm2.json
 		The name of the web service is web under pm2 manager.
 
+# Remove mysql
+	https://www.digitalocean.com/community/tutorials/how-to-allow-remote-access-to-mysql
+
+	note: after creating the user (in my case remoteuser0) execute the following:
+	execute ALTER USER 'remoteuser0'@'%' IDENTIFIED WITH mysql_native_password BY 'password'
+	therwise the code below will fail
