@@ -217,6 +217,8 @@ const launch = (async (c: number) => {
       let failed: number = 0;
       let urls: Array<Url> = await sqlUrls(take);
 
+      console.log(urls)
+
       const pages: Array<Npage> = await browser.newPages(urls.splice(0, tabs));
       const cstime = Date.now();
 

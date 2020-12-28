@@ -97,3 +97,6 @@
 	note: after creating the user (in my case remoteuser0) execute the following:
 	execute ALTER USER 'remoteuser0'@'%' IDENTIFIED WITH mysql_native_password BY 'password'
 	therwise the code below will fail
+
+	# Flush hosts
+	https://stackoverflow.com/questions/22285318/how-to-unblock-with-mysqladmin-flush-hosts

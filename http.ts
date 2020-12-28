@@ -27,6 +27,7 @@ app.use(bodyParser.raw());
 // Browser instances
 
 (async () => {
+  /*
   const browser = new Browser({
     id: 'xs',
     blocker: true,
@@ -37,6 +38,7 @@ app.use(bodyParser.raw());
   ]});
   await browser.launch();
   await browser.newPages(20);
+  */
 
   app.get('/', function (req: any, res: any) {
     res.send("The rest api layer of the extractor, api docs coming soon...");
@@ -45,7 +47,7 @@ app.use(bodyParser.raw());
   app.post('/api/v0/extracts/get', function (req: any, res: any) {
     console.log(req.body.urls);
 
-    const condition = req.body.urls.map(u => `(url LIKE '%${u}')`).join(' or ');
+    const condition = req.body.urls.map(u => `(originUrl LIKE '${u}')`).join(' or ');
     const sql = `select * from extracts where 1 and (${condition}) `;
 
     console.log(sql);
@@ -53,6 +55,7 @@ app.use(bodyParser.raw());
     dbSql.query(sql, (err, rows) => { res.json(rows); });
   });
 
+  /*
   app.post('/extractor/readability', async function (req: any, res: any) {
     const pages: Array<Npage> = await browser.newPages([req.body.url]);
 
@@ -65,6 +68,7 @@ app.use(bodyParser.raw());
       await browser.newPages(1);
     });
   });
+  */
 
   http.listen(port, function() {
     console.log("listening on *:" + port);
