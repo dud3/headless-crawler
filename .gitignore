@@ -9,3 +9,5 @@ web_modules/
 *.tsbuildinfo
 
 extract-dir/
+
+.env
