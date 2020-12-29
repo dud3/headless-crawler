@@ -29,6 +29,7 @@ export class Extract {
     start: 0,
     end: 0
   };
+  status: number = 0;
   error: string = '';
 }
 

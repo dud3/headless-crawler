@@ -1,6 +1,6 @@
 import dbSql from "./db-sql";
 
-import Browser, { Npage } from './Browser';
+import Browser, { Npage, Extract } from './Browser';
 
 import core from "./core";
 import readability from "./readability";
@@ -45,14 +45,30 @@ app.use(bodyParser.raw());
   });
 
   app.post('/api/v0/extracts/get', function (req: any, res: any) {
-    console.log(req.body.urls);
-
     const condition = req.body.urls.map(u => `(originUrl LIKE '${u}')`).join(' or ');
     const sql = `select * from extracts where 1 and (${condition}) `;
 
-    console.log(sql);
+    const extracts: Array<Extract> = [];
+    dbSql.query(sql, (err, rows) => {
 
-    dbSql.query(sql, (err, rows) => { res.json(rows); });
+      req.body.urls.map(u => {
+        let extract = new Extract();
+        extract.originUrl = u;
+
+        rows.map(row => {
+          row = <Extract>row;
+
+          if (row.originUrl == u) {
+            extract = Object.assign(extract, row);
+            extract.status = extract.error.length > 0 ? -1 : 1;
+          }
+        });
+
+        extracts.push(extract);
+      });
+
+      res.json(extracts);
+    });
   });
 
   /*
