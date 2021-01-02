@@ -1,6 +1,6 @@
 # Instances
-	165.227.21.173 - 2gb/2cpu
-	165.227.28.233 - 2gb/2cpu
+	165.227.21.173 - 2gb/2cpu - Does not function properly
+	165.227.28.233 - 2gb/2cpu - The cdb and api
 	159.89.128.168 - 2gb/2cpu
 	159.89.130.28 - 2gb/2cpu
 
@@ -100,3 +100,7 @@
 
 	# Flush hosts
 	https://stackoverflow.com/questions/22285318/how-to-unblock-with-mysqladmin-flush-hosts
+
+# Import large csv
+	mysql --local-infile=1 -u root -p // note: --local-infile=1
+	load data local infile 'top-1m.csv' into table extractor.sites fields terminated by ',' enclosed by '"' lines terminated by '\n' (url);

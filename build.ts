@@ -33,7 +33,7 @@ const sql = `
   DROP TABLE IF EXISTS \`sites\`;
   CREATE TABLE \`sites\` (
     \`id\` bigint NOT NULL AUTO_INCREMENT,
-    \`url\` varchar(2024) NOT NULL,
+    \`url\` varchar(2024) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
     \`crawled\` tinyint(1) NOT NULL DEFAULT '0',
     \`crawlTime\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     \`locked\` tinyint(1) NOT NULL DEFAULT '0',
@@ -48,6 +48,11 @@ const sql = `
 
   ALTER TABLE
       extracts
+      CONVERT TO CHARACTER SET utf8mb4
+      COLLATE utf8mb4_unicode_ci;
+
+  ALTER TABLE
+      sites
       CONVERT TO CHARACTER SET utf8mb4
       COLLATE utf8mb4_unicode_ci;
 
@@ -67,6 +72,7 @@ const sql = `
     ('reuters.com',  0,  '2020-12-11 20:27:31',  ''),
     ('mozilla.org',  0,  '2020-12-11 20:27:30',  ''),
     ('npr.org',  0,  '2020-12-11 20:27:37',  ''),
+    ('007names.info',  0,  '2020-12-11 23:01:23',  ''), -- error
     ('newyorker.com',  0,  '2020-12-11 20:27:45',  ''),
     ('economist.com',  0,  '2020-12-11 20:27:42',  ''),
     ('wikipedia.org',  0,  '2020-12-11 20:27:39',  ''),
@@ -95,7 +101,6 @@ const sql = `
     ('daringfireball.net', 0,  '2020-12-11 23:01:19',  ''),
     ('stackoverflow.com',  0,  '2020-12-11 23:01:20',  ''),
     ('stackexchange.com',  0,  '2020-12-11 23:01:23',  ''),
-    ('007names.info',  0,  '2020-12-11 23:01:23',  ''), -- error
     ('01.media',  0,  '2020-12-11 23:01:23',  '') -- error
 `;
 
