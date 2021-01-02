@@ -137,8 +137,8 @@ const instance = async () => {
 
   const sqlSites = async (): Promise<number> => {
     return new Promise((resolve, reject) => {
-      dbSql.query(`select count(*) as sites from sites `, async (err, rows) => {
-        if (err) reject('sqlSites failed'); resolve(rows[0].sites);
+      dbSql.query(`select count(*) as sites from sites where crawled = 0 and length(error) = 0`, async (err, rows) => {
+        if (err) reject(0); resolve(rows[0].sites);
       });
     });
   }
@@ -220,8 +220,9 @@ const instance = async () => {
   (async () => {
     console.log(`...starting with: ${promisses.length} tabs`);
 
-    for (let i = 0; i < sites; i++) {
-      await promisses[i % tabs]
+    let i = 0;
+    while (await sqlSites() > 0) {
+      await promisses[i++ % tabs]
       .then(async npage => {
         success++;
         console.log(`Resolved(${success}): ${npage.url.url}` +
