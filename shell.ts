@@ -238,7 +238,7 @@ const instance = async () => {
           process.exit();
         }
 
-        if (await sqlSites() > 0) handleTab(npage.index);
+        if (await sqlSites() > 0) await handleTab(npage.index);
       });
   }
 
