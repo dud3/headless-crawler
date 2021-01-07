@@ -193,8 +193,6 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
 
   // Page response
 
-  console.log(url);
-
   extract.goto.start = Date.now();
 
   try {
