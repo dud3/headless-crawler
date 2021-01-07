@@ -228,7 +228,7 @@ const instance = async () => {
             npage = await browser.newPage(npage.url, npage.index);
           }
 
-          promisses[npage.index] = () => extractPromise(npage);
+          if (await sqlSites() > 0) await handleTab(npage.index);
 
           urls.splice(0, 1);
         } else {
@@ -237,8 +237,6 @@ const instance = async () => {
           await browser.close();
           process.exit();
         }
-
-        if (await sqlSites() > 0) await handleTab(npage.index);
       });
   }
 
