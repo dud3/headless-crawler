@@ -193,6 +193,8 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
 
   // Page response
 
+  console.log(url);
+
   extract.goto.start = Date.now();
 
   try {
@@ -222,7 +224,7 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
       return Date.now() - window.performance.timing.navigationStart;
     });
   } catch (e) {
-    console.log(e); // todo: handle me
+    throw new Error(e);
   }
 
   // Readability
@@ -236,7 +238,7 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
       }())
     `);
   } catch (e) {
-    console.log(e); // todo: handle me
+    throw new Error(e);
   }
 
   // Off events
@@ -364,5 +366,7 @@ export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeou
     extract.reports = reports;
 
     return extract;
-  });
+  }).catch(() => {
+    throw new Error('File reading failed');
+  })
 }

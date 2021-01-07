@@ -197,32 +197,8 @@ const instance = async () => {
     });
   }
 
-  const browser = new Browser({ id: "ys", blocker: true, headless: argv['--headless'].v });
-  await browser.launch();
-
-  let tabs: number = argv['--tabs'].v;
-  let sites: number = await sqlSites(); // Total number of sites to crawl
-  let urls: Array<Url> = await sqlUrls(argv['--tabs'].v); // The urls to crawl
-
-  let processed: number = 0;
-  let success: number = 0;
-  let failed: number = 0;
-
-  const pages: Array<Npage> = await browser.newPages(urls.splice(0, tabs));
-  const promisses: Array<Promise<Npage>> = [];
-
-  const cstime = Date.now(); // Start of crawl
-
-  pages.map(npage => { promisses.push(extractPromise(npage)); }); // Initial tabs
-
-  // kickstart
-
-  (async () => {
-    console.log(`...starting with: ${promisses.length} tabs`);
-
-    let i = 0;
-    while (await sqlSites() > 0) {
-      await promisses[i++ % tabs]
+  const handleTab = async (i: number) => {
+     return promisses[i]() // note: array -> function -> promise -> npage, we did push extractPromises above, we can't let the execute until we then...then...catch
       .then(async npage => {
         success++;
         console.log(`Resolved(${success}): ${npage.url.url}` +
@@ -252,7 +228,7 @@ const instance = async () => {
             npage = await browser.newPage(npage.url, npage.index);
           }
 
-          promisses[npage.index] = extractPromise(npage);
+          promisses[npage.index] = () => extractPromise(npage);
 
           urls.splice(0, 1);
         } else {
@@ -261,9 +237,33 @@ const instance = async () => {
           await browser.close();
           process.exit();
         }
+
+        if (await sqlSites() > 0) handleTab(npage.index);
       });
-    }
-  })();
+  }
+
+  const browser = new Browser({ id: "ys", blocker: true, headless: argv['--headless'].v });
+  await browser.launch();
+
+  let tabs: number = argv['--tabs'].v;
+  let sites: number = await sqlSites(); // Total number of sites to crawl
+  let urls: Array<Url> = await sqlUrls(argv['--tabs'].v); // The urls to crawl
+
+  let processed: number = 0;
+  let success: number = 0;
+  let failed: number = 0;
+
+  const pages: Array<Npage> = await browser.newPages(urls.splice(0, tabs));
+  const promisses: Array<() => Promise<Npage>> = [];
+
+  const cstime = Date.now(); // Start of crawl
+
+  pages.map(async npage => { promisses.push(() => extractPromise(npage)) }); // Initial tabs
+
+  // kickstart
+
+  for (let i = 0; i < promisses.length; i++) handleTab(i);
+  console.log(`...starting with: ${promisses.length} tabs`);;
 };
 
 instance();
