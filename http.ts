@@ -45,8 +45,10 @@ app.use(bodyParser.raw());
   });
 
   app.post('/api/v0/extracts/get', function (req: any, res: any) {
-    const condition = req.body.urls.map(u => `(originUrl='${u}')`).join(' or ');
-    const sql = `select * from extracts where 1 and (${condition}) `;
+    const condition = req.body.urls.map(u => `'${u}'`).join(',');
+    const sql = `select * from extracts where originUrl in(${condition}) `;
+
+    console.log(sql);
 
     const extracts: Array<Extract> = [];
     dbSql.query(sql, (err, rows) => {

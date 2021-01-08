@@ -83,7 +83,7 @@ const instance = async () => {
         contentSize = ${extract.contentSize},
         contentReaderable = ${extract.contentReaderable},
         loadSpeed = ${extract.loadSpeed},
-        error = '${extract.error}'
+        error = '${extract.error || ''}'
     `
 
       await dbSql.query(sql, (err) => { if (err) console.log(err); });
