@@ -1,4 +1,6 @@
-import { sparseInt, wait } from "./utils";
+require('dotenv').config()
+
+import { sparseInt, wait, rand } from "./utils";
 const { addSlashes, stripSlashes } = require('slashes')
 
 import constants from './constants'
@@ -90,47 +92,38 @@ const instance = async () => {
     }
   }
 
-  const sqlUrls = async (take: number = 1): Promise<Array<Url>> => {
+  const sqlUrls = async (take: number = 1, skip: number = 0): Promise<Array<Url>> => {
     return new Promise((resolve) => {
 
       let condition = "(crawled = 0 and length(error) = 0)";
-
       let locked = " and (locked = 0) ";
-        argv['--syncerrors'].v.map((c) => {
-          switch (c) {
-            case "all":
-              locked = "";
-              condition += " OR (length(error) > 0) ";
-            break;
-            case "epte":
-              locked = "";
-              condition += " OR (`error` LIKE '%Error: Protocol error%') ";
-            break;
 
-            case "eoe":
-              locked = "";
-              condition += " "; // todo: ...
-            break;
-          }
-			});
+      argv['--syncerrors'].v.map((c) => {
+        switch (c) {
+          case "all":
+            locked = "";
+            condition += " OR (length(error) > 0) ";
+          break;
+          case "epte":
+            locked = "";
+            condition += " OR (`error` LIKE '%Error: Protocol error%') ";
+          break;
+
+          case "eoe":
+            locked = "";
+            condition += " "; // todo: ...
+          break;
+        }
+      });
 
       if(argv['--synctimeouts'].v) condition += " OR `error` LIKE '%TimeoutError%' ";
 
-      const sql = `select * from sites where ${condition} ${locked} order by id asc limit ${take}`
+      const sql = `select * from sites where ${condition} ${locked} order by id asc limit ${skip}, ${take}`
 
       if (argv['--debug'].v) console.log(sql);
 
       dbSql.query(sql, async (err, rows) => {
-        const ids = rows.map(r => r.id).join(',');
-        if (ids.length > 0) {
-          const idsql = `update sites set locked = 1 where id in(${ids})`;
-
-          dbSql.query(idsql, async (err) => {
-            resolve(rows.map(row => { return { id: row.id, url: row.url } }) || []);
-          });
-        } else {
-          resolve([]);
-        }
+        resolve(rows.map(row => { return { id: row.id, url: row.url } }) || []);
       });
     });
   }
@@ -143,13 +136,21 @@ const instance = async () => {
     });
   }
 
+  const sqlSiteLock = async (npage: Npage) => {
+    return new Promise((resolve, reject) => {
+      dbSql.query(`update sites set locked = 1 where url='${npage.url.url}'`, async (err, rows) => {
+        if (err) reject(); else resolve();
+      });
+    });
+  }
+
   const extractPromise = async (npage: Npage): Promise<Npage> => {
     return new Promise(async (resolve, reject) => {
 
       let theExtract = new Extract;
 
       try {
-      	// Extraction
+        // Extraction
         const extract = await core(npage.blocker, npage.page, "https://" + npage.url.url, argv["--timeout"].v, argv["--waitfor"].v);
 
         theExtract.originUrl = addSlashes(npage.url.url);
@@ -197,71 +198,74 @@ const instance = async () => {
     });
   }
 
-  const handleTab = async (i: number) => {
-     return promisses[i]() // note: array -> function -> promise -> npage, we did push extractPromises above, we can't let the execute until we then...then...catch
-      .then(async npage => {
-        success++;
-        console.log(`Resolved(${success}): ${npage.url.url}` +
-          ` - goto time: ${npage.extract.goto.end - npage.extract.goto.start}` +
-          ` - dequeue time: ${Date.now() - npage.extract.goto.start}`);
+  const handlePage = (index: number) => {
+    return promisses[index]() // note: ()
+    .then(async npage => {
+      success++;
+      console.log(`Resolved(${success}): ${npage.url.url}` +
+        ` - goto time: ${npage.extract.goto.end - npage.extract.goto.start}` +
+        ` - dequeue time: ${Date.now() - npage.extract.goto.start}`);
 
-        return Promise.resolve(npage);
-      })
-      .catch(async npage => {
-        failed++;
-        console.log(`Failed(${failed}): ${npage.url.url} - ${npage.error}`);
+      return Promise.resolve(npage);
+    })
+    .catch(async npage => {
+      failed++;
+      console.log(`Failed(${failed}): ${npage.url.url} - ${npage.error}`);
 
-        return Promise.resolve(npage);
-      })
-      .then(async npage => { // finally
-        processed++;
+      return Promise.resolve(npage);
+    })
+    .then(async npage => { // finally
+      processed++;
 
-        if(urls.length <= tabs) (await sqlUrls(1)).map(r => { urls.push(r) });
+      await sqlSiteLock(npage);
 
-        if (urls.length > 0) {
-          console.log(`Swapping tab(${npage.index}) - ${npage.url.url} -> ${urls[0].url}\n`);
+      const rconst = tabs + 40;
+      const urls = await sqlUrls(rconst, parseInt(process.env.CRAWLER_INDEX) * sites);
 
-          npage.url = urls[0];
+      if (urls.length > 0) {
+        const url = urls[rand(rconst)]; // avoid collision of multiple promises
 
-          if (argv['--closetab'].v) {
-            await browser.closePage(npage);
-            npage = await browser.newPage(npage.url, npage.index);
-          }
+        console.log(`Swapping tab(${npage.index}): ${npage.url.url} -> ${url.url}\n`);
+        npage.url = url
 
-          if (await sqlSites() > 0) await handleTab(npage.index);
-
-          urls.splice(0, 1);
-        } else {
-          console.log(`Waiting for last promisses... seconds elapsed = ${Math.floor((Date.now() - cstime) / 1000)} (${Date.now() - cstime}ms)`);
-          await wait(60000);
-          await browser.close();
-          process.exit();
+        if (argv['--closetab'].v) {
+          await browser.closePage(npage);
+          npage = await browser.newPage(npage.url, npage.index);
         }
-      });
+
+        await handlePage(npage.index);
+      } else {
+        console.log(`Waiting for last promisses... seconds elapsed = ${Math.floor((Date.now() - cstime) / 1000)} (${Date.now() - cstime}ms)`);
+        await wait(60000);
+        await browser.close();
+        process.exit();
+      }
+    });
   }
 
   const browser = new Browser({ id: "ys", blocker: true, headless: argv['--headless'].v });
   await browser.launch();
 
   let tabs: number = argv['--tabs'].v;
-  let sites: number = await sqlSites(); // Total number of sites to crawl
-  let urls: Array<Url> = await sqlUrls(argv['--tabs'].v); // The urls to crawl
+  let sites: number = Math.floor(await sqlSites() / parseInt(process.env.CRAWLERS)); // Total number of sites per crawler, CRAWLERS=4, CRAWLER_INDEX=0
 
   let processed: number = 0;
   let success: number = 0;
   let failed: number = 0;
 
-  const pages: Array<Npage> = await browser.newPages(urls.splice(0, tabs));
+  const pages: Array<Npage> = await browser.newPages(await sqlUrls(argv['--tabs'].v));
   const promisses: Array<() => Promise<Npage>> = [];
 
-  const cstime = Date.now(); // Start of crawl
+  const cstime = Date.now(); // Start of crawlf
 
-  pages.map(async npage => { promisses.push(() => extractPromise(npage)) }); // Initial tabs
+  console.log(`tabs: ${promisses.length}\nsites: ${sites}\ncrawler_index: ${process.env.CRAWLER_INDEX}\ncrawlers: ${process.env.CRAWLERS}`);
+
+  pages.map((npage) => { promisses.push(() => extractPromise(npage)); }); // Initial tabs
 
   // kickstart
 
-  for (let i = 0; i < promisses.length; i++) handleTab(i);
-  console.log(`...starting with: ${promisses.length} tabs`);;
+  promisses.map((p, i) => { handlePage(i); });
+
 };
 
 instance();

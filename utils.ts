@@ -155,3 +155,5 @@ export const getHashedValues = (algorithm, object) => {
 export const sparseInt = (v, d) => Number.isInteger(parseInt(v)) ? parseInt(v) : d;
 
 export const wait = (t) => new Promise((resolve) => { setTimeout(() => { resolve(t); }, t) });
+
+export const rand = (x) => Math.floor(Math.random() * x)
