@@ -30,6 +30,7 @@ export class Extract {
     end: 0
   };
   status: number = 0;
+  crawler: string = '';
   error: string = '';
 }
 

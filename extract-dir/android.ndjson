@@ -1,8 +1,0 @@
-{"message":{"matches":["mc.yandex.ru/metrika/tag.js"],"stack":[{"fileName":"https://artamonoviv.ru/"}],"type":"SessionRecording","url":"mc.yandex.ru/metrika/tag.js"},"level":"warn","timestamp":"2020-12-17T10:23:58.437Z"}
-{"message":{"matches":["mc.yandex.ru/metrika/watch.js"],"stack":[{"fileName":"https://www.artofliving.org/us-en"}],"type":"SessionRecording","url":"mc.yandex.ru/metrika/watch.js"},"level":"warn","timestamp":"2020-12-17T10:24:53.736Z"}
-{"message":{"matches":["mc.yandex.ru/metrika/watch.js"],"stack":[{"fileName":"https://asi.ru/"}],"type":"SessionRecording","url":"mc.yandex.ru/metrika/watch.js"},"level":"warn","timestamp":"2020-12-17T10:28:11.137Z"}
-{"message":{"matches":["mc.yandex.ru/metrika/tag.js"],"stack":[{"fileName":"https://asi.ru/"}],"type":"SessionRecording","url":"mc.yandex.ru/metrika/tag.js"},"level":"warn","timestamp":"2020-12-17T10:28:12.522Z"}
-{"message":{"matches":["mc.yandex.ru/metrika/watch.js"],"stack":[{"fileName":"https://atrybox.com/"}],"type":"SessionRecording","url":"mc.yandex.ru/metrika/watch.js"},"level":"warn","timestamp":"2020-12-17T10:32:07.915Z"}
-{"message":{"matches":["fullstory.com/s/fs.js"],"stack":[{"fileName":"https://www.avo.app/"}],"type":"SessionRecording","url":"fullstory.com/s/fs.js"},"level":"warn","timestamp":"2020-12-17T10:36:48.168Z"}
-{"message":{"matches":["static.hotjar.com"],"stack":[{"fileName":"https://eksobionics.com/"}],"type":"SessionRecording","url":"static.hotjar.com/c/hotjar-1450590.js"},"level":"warn","timestamp":"2020-12-17T10:58:54.135Z"}
-{"message":{"matches":["static.hotjar.com"],"stack":[{"fileName":"https://www.booklyapp.com/"}],"type":"SessionRecording","url":"static.hotjar.com/c/hotjar-1692972.js"},"level":"warn","timestamp":"2020-12-17T11:37:24.180Z"}

@@ -1,8 +1,9 @@
 # Instances
-	165.227.21.173 - 2gb/2cpu
-	165.227.28.233 - 2gb/2cpu
-	159.89.128.168 - 2gb/2cpu
-	159.89.130.28 - 2gb/2cpu
+	165.227.21.173 - 2gb/2cpu - CRAWLER_INDEX=0
+	165.227.28.233 (to be replaced with: 159.203.86.195) - 2gb/2cpu - CRAWLER_INDEX=NOT_SET
+	159.89.128.168 - 2gb/2cpu - CRAWLER_INDEX=1
+	159.89.130.28 - 2gb/2cpu - CRAWLER_INDEX=2
+	134.122.9.84 - 1cpu/1gb - CRAWLER_INDEX=3
 
 # Reset crawler script
 // It needs the path var for the crontab
@@ -20,6 +21,7 @@
 	forever stopall
 	pkill chrome
 	pkill node
+	pkill ts-node
 	pkill mysql
 	service mysql restart
 	forever start -c "yarn shell --tabs=10 --waitfor=3000 --sites=47350" ./
@@ -96,11 +98,12 @@
 
 	note: after creating the user (in my case remoteuser0) execute the following:
 	execute ALTER USER 'remoteuser0'@'%' IDENTIFIED WITH mysql_native_password BY 'password'
-	therwise the code below will fail
+	otherwise the code below will fail
 
 	# Flush hosts
 	https://stackoverflow.com/questions/22285318/how-to-unblock-with-mysqladmin-flush-hosts
 
 # Import large csv
+	SET GLOBAL local_infile=1;
 	mysql --local-infile=1 -u root -p // note: --local-infile=1
 	load data local infile 'top-1m.csv' into table extractor.sites fields terminated by ',' enclosed by '"' lines terminated by '\n' (url);
