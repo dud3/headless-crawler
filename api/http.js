@@ -68,6 +68,7 @@ app.post('/api/v0/extracts/get', function (req, res) {
     req.body.urls.map(u => {
       let extract = new iextract();
       extract.originUrl = u;
+      extract.status = 0;
 
       rows.map(row => {
         if (row.originUrl == u) {
