@@ -144,7 +144,7 @@ app.get('/api/v0/sites/get', function (req, res) {
 
 app.get('/api/v0/sites/lock', function (req, res) {
   if (req.query.url) {
-    const sql = `update site set locked = 1 where url = '${req.query.url}'`;
+    const sql = `update sites set locked = 1 where url = '${req.query.url}'`;
 
     if (process.env.DEBUG) console.log(sql);
 
@@ -152,6 +152,23 @@ app.get('/api/v0/sites/lock', function (req, res) {
   } else {
     res.status(400).json([]);
   }
+});
+
+app.get('/api/v0/stats', function (req, res) {
+  const crawled = `select count(id) as crawled from extracts where error = ''`;
+  const error = `select count(id) as errors from extracts where error <> ''`;
+
+  if (process.env.DEBUG) console.log(crawled, error);
+
+  dbSql.query(crawled, (err, r0) => {
+    dbSql.query(error, (err, r1) => {
+      console.log(r0, r1);
+      res.json({
+        crawled: r0[0].crawled,
+        errors: r1[0].errors
+      })
+    });
+  });
 });
 
 http.listen(port, function() {
