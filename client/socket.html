@@ -1,0 +1,121 @@
+<html>
+<header>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@quasar/extras/material-icons/material-icons.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/quasar/dist/quasar.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quasar/dist/quasar.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.0/axios.js" integrity="sha512-bYkaBWaFtfPIMYt9+CX/4DWgfrjcHinjerNYxQmQx1VM76eUsPPKZa5zWV8KksVkBF/DaHSADCwil2J5Uq2ctA==" crossorigin="anonymous"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.js"></script>
+</header>
+
+<body>
+  <div id="q-app">
+    <q-layout view="hHh lpR fFf">
+      <q-header elevated class="bg-primary text-white">
+        <q-toolbar>
+          <q-toolbar-title>
+            Extractor client
+          </q-toolbar-title>
+        </q-toolbar>
+      </q-header>
+
+      <q-page-container>
+        <q-form @submit="extract">
+          <div class="row q-pt-md justify-center">
+            <div class="col-3">
+               <q-input :disable="loading" :loading="loading" v-model="url" label="Extract site... (e.x: https://google.com)" outlined color="primary">
+                 <template v-slot:append>
+                    <q-icon name="search" v-show="!loading" />
+                  </template>
+               </q-input>
+            </div>
+          </div>
+        </q-form>
+
+        <div class="row justify-center">
+          <div class="col-10">
+            <q-list bordered class="rounded-borders" v-show="data.length > 0">
+              <q-expansion-item
+                expand-separator
+                icon="archive"
+                :label="'Blocked ads and trackers (' + data.length + ')'"
+              >
+                <q-card>
+                  <q-card-section>
+                    <q-list bordered separator>
+                      <q-item clickable v-ripple v-for="(item, index) in data" :key="index" class="ellipsis">
+                        <q-item-section class="ellipsis"><span class="text-bold">{{ item.type }}</span> {{ item.url }}</q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+            </q-list>
+          </div>
+        </div>
+      </q-page-container>
+
+      <q-footer elevated class="bg-grey-8 text-white">
+        <q-toolbar>
+          <q-toolbar-title style="font-size: 12px;">
+            Version: {{ version }}
+          </q-toolbar-title>
+        </q-toolbar>
+      </q-footer>
+    </q-layout>
+  </div>
+
+  <script>
+    window.socket = io("http://localhost:3001");
+  </script>
+
+  <script>
+  //
+  // note: this is only a test client, will be re-written in nodejs
+  //
+  new Vue({
+    el: '#q-app',
+    data: function () {
+      return {
+        url: '',
+        select: 'http',
+        loading: false,
+
+        data: [],
+
+        version: '0.0.1'
+      }
+    },
+    created () {
+      const arr = {
+        'request-blocked': (url) => {
+          console.log(url);
+          this.data.push(url);
+        },
+        'request-redirected': (request) => {},
+        'request-whitelisted': (request) => {},
+        'csp-injected': (request) => {},
+        'script-injected': (script, url) => {},
+        'style-injected': (script, url) =>  {},
+        'browser-tab-closed': () => { this.loading = false; this.$q.notify({ position: 'top', color: 'green', message: 'Site extracted (browser tab closed)' }) }
+      };
+
+      for (const key in arr) {
+        window.socket.on(key, arr[key]);
+      }
+    },
+    methods: {
+      extract: function () {
+        this.data = [];
+        this.loading = true;
+
+        console.log(this.url, window.socket);
+
+        window.socket.emit("send-url", this.url);
+      }
+    }
+  })
+  </script>
+</body>
+</html>

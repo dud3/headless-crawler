@@ -1,0 +1,116 @@
+<html>
+<header>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@quasar/extras/material-icons/material-icons.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/quasar/dist/quasar.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quasar/dist/quasar.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.0/axios.js" integrity="sha512-bYkaBWaFtfPIMYt9+CX/4DWgfrjcHinjerNYxQmQx1VM76eUsPPKZa5zWV8KksVkBF/DaHSADCwil2J5Uq2ctA==" crossorigin="anonymous"></script>
+</header>
+
+<body>
+  <div id="q-app">
+    <q-layout view="hHh lpR fFf">
+      <q-header elevated class="bg-primary text-white">
+        <q-toolbar>
+          <q-toolbar-title>
+            Extractor client
+          </q-toolbar-title>
+        </q-toolbar>
+      </q-header>
+
+      <q-page-container>
+        <q-form @submit="extract">
+          <div class="row q-pt-md justify-center">
+            <div class="col-3">
+               <q-input :disable="loading" :loading="loading" v-model="url" label="Extract site... (e.x: https://google.com)" outlined color="primary">
+                 <template v-slot:append>
+                    <q-icon name="search" v-show="!loading" />
+                  </template>
+               </q-input>
+            </div>
+            <div class="col-1">
+               <q-select v-model="select" :options="options" label="Module" outlined />
+            </div>
+          </div>
+        </q-form>
+
+        <div class="row justify-center">
+          <div class="col-10">
+            <q-list bordered class="rounded-borders" v-show="data.length > 0">
+              <q-expansion-item
+                expand-separator
+                icon="archive"
+                :label="'Blocked ads and trackers (' + data.length + ')'"
+              >
+                <q-card>
+                  <q-card-section>
+                    <q-list bordered separator>
+                      <q-item clickable v-ripple v-for="(item, index) in data" :key="index" class="ellipsis">
+                        <q-item-section class="ellipsis"><span class="text-bold">
+                          <pre>{{ data }}</pre>
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+            </q-list>
+          </div>
+        </div>
+      </q-page-container>
+
+
+      <q-footer elevated class="bg-grey-8 text-white">
+        <q-toolbar>
+          <q-toolbar-title style="font-size: 12px;">
+            Version: {{ version }}
+          </q-toolbar-title>
+        </q-toolbar>
+      </q-footer>
+    </q-layout>
+  </div>
+
+  <script>
+  //
+  // note: this is only a test client, will be re-written in nodejs
+  //
+  new Vue({
+    el: '#q-app',
+    data: function () {
+      return {
+        url: '',
+        options: ['Core', 'Readability'],
+        select: 'Core',
+        loading: false,
+        data: [],
+
+        version: '0.0.1'
+      }
+    },
+    methods: {
+      extract: function () {
+        const api = 'http://134.122.9.84:3000'; // todo: handle me properly
+
+        this.loading = true;
+
+        axios.post(api + (this.select == 'Core' ? '/url' : '/extractor/readability'), { url: this.url }).then((r) => {
+          console.log(r.data);
+          this.data = [r.data];
+        }).catch((e) => {
+          this.loading = false;
+          this.$q.notify({
+            position: 'top',
+            color: 'red',
+            message: "Something went wrong or server is down!"
+          })
+
+          console.log(e); // todo: handle me
+        }).then(() => {
+          this.loading = false;
+        });
+      }
+    }
+  })
+  </script>
+</body>
+</html>
