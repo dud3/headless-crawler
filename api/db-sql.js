@@ -2,7 +2,8 @@ require('dotenv').config()
 
 var mysql = require('mysql');
 
-var con = mysql.createConnection({
+var con = mysql.createPool({
+  connectionLimit: 400,
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
@@ -10,7 +11,7 @@ var con = mysql.createConnection({
   charset : 'utf8mb4_unicode_ci'
 })
 
-con.connect();
+// con.connect();
 console.log("Mysql server started.")
 
 module.exports = con;
