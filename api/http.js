@@ -144,7 +144,7 @@ app.get('/api/v0/sites/get', function (req, res) {
 
 app.get('/api/v0/sites/lock', function (req, res) {
   if (req.query.url) {
-    const sql = `update sites set locked = 1 where url = '${req.query.url}'`;
+    const sql = `update site set locked = 1 where url = '${req.query.url}'`;
 
     if (process.env.DEBUG) console.log(sql);
 
