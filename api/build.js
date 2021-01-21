@@ -25,6 +25,7 @@ const sql = `
     \`contentReaderable\` tinyint NOT NULL,
     \`loadSpeed\` double NOT NULL COMMENT 'seconds to document loaded',
     \`error\` text COLLATE utf8mb4_unicode_ci NOT NULL,
+    \`status\` tinyint NOT NULL DEFAULT '0' COMMENT '-1, 0, 1',
     PRIMARY KEY (\`id\`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
