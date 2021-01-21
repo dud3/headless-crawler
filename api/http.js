@@ -1,7 +1,5 @@
 require('dotenv').config()
 
-const fs = require('fs');
-
 const express = require('express')
 const bodyParser = require('body-parser');
 const dbSql = require('./db-sql');
@@ -93,6 +91,8 @@ app.post('/api/v0/extracts/store', function (req, res) {
 
   const extract = new iextract(req.body);
 
+  const status = (extract.error && extract.error.length > 0 ? -1 : 1) || 0
+
   try {
     const sql = `
       insert into extracts set
@@ -110,7 +110,8 @@ app.post('/api/v0/extracts/store', function (req, res) {
       contentReaderable = '${extract.contentReaderable}',
       loadSpeed = '${extract.loadSpeed}',
       error = "${addSlashes(extract.error)}",
-      crawler = '${addSlashes(extract.crawler)}'
+      crawler = '${addSlashes(extract.crawler)}',
+      status = ${status}
     `
 
     if (process.env.DEBUG) console.log(sql);
@@ -159,8 +160,6 @@ app.get('/api/v0/sites/lock', function (req, res) {
 app.get('/api/v0/stats', function (req, res) {
   const crawled = `select count(id) as crawled from extracts where error = ''`;
   const error = `select count(id) as errors from extracts where error <> ''`;
-
-  if (req.query.cache) return res.json(JSON.parse(fs.readFileSync('./cache/stats.json')));
 
   if (process.env.DEBUG) console.log(crawled, error);
 
