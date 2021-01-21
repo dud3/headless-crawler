@@ -1,5 +1,7 @@
 require('dotenv').config()
 
+const fs = require('fs');
+
 const express = require('express')
 const bodyParser = require('body-parser');
 const dbSql = require('./db-sql');
@@ -158,11 +160,12 @@ app.get('/api/v0/stats', function (req, res) {
   const crawled = `select count(id) as crawled from extracts where error = ''`;
   const error = `select count(id) as errors from extracts where error <> ''`;
 
+  if (req.query.cache) return res.json(JSON.parse(fs.readFileSync('./cache/stats.json')));
+
   if (process.env.DEBUG) console.log(crawled, error);
 
   dbSql.query(crawled, (err, r0) => {
     dbSql.query(error, (err, r1) => {
-      console.log(r0, r1);
       res.json({
 	crawled: r0[0].crawled + 320000,
         errors: r1[0].errors
