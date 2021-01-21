@@ -158,8 +158,8 @@ app.get('/api/v0/sites/lock', function (req, res) {
 });
 
 app.get('/api/v0/stats', function (req, res) {
-  const crawled = `select count(id) as crawled from extracts where error = ''`;
-  const error = `select count(id) as errors from extracts where error <> ''`;
+  const crawled = `select count(id) as crawled from extracts where \`status\` = 1`;
+  const error = `select count(id) as errors from extracts where \`status\` = -1`;
 
   if (process.env.DEBUG) console.log(crawled, error);
 
