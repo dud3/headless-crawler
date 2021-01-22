@@ -21,24 +21,15 @@
       <q-page-container>
         <q-form @submit="extract">
           <div class="row q-pt-md justify-center">
-            <div class="col-6">
-               <q-select
-                  label="e.x: domain.com them click Enter"
-                  filled
-                  v-model="urls"
-                  use-input
-                  use-chips
-                  multiple
-                  hide-dropdown-icon
-                  input-debounce="0"
-                  new-value-mode="add"
-                  style="width: 100%"
-                />
+            <div class="col-3">
+               <q-input :disable="loading" :loading="loading" v-model="url" label="Extract site... (e.x: https://google.com)" outlined color="primary">
+                 <template v-slot:append>
+                    <q-icon name="search" v-show="!loading" />
+                  </template>
+               </q-input>
             </div>
-          </div>
-          <div class="row justify-center q-pa-md">
             <div class="col-1">
-              <q-btn type="submit" label="Fetch" :disable="loading || urls.length == 0" :loading="loading" style="height: 100%" outlined color="primary" size="lg" />
+               <q-select v-model="select" :options="options" label="Module" outlined />
             </div>
           </div>
         </q-form>
@@ -56,7 +47,7 @@
                     <q-list bordered separator>
                       <q-item clickable v-ripple v-for="(item, index) in data" :key="index" class="ellipsis">
                         <q-item-section class="ellipsis"><span class="text-bold">
-                          <pre>{{ item }}</pre>
+                          <pre>{{ data }}</pre>
                         </q-item-section>
                       </q-item>
                     </q-list>
@@ -72,7 +63,7 @@
       <q-footer elevated class="bg-grey-8 text-white">
         <q-toolbar>
           <q-toolbar-title style="font-size: 12px;">
-            Version: 0.0.1
+            Version: {{ version }}
           </q-toolbar-title>
         </q-toolbar>
       </q-footer>
@@ -87,20 +78,24 @@
     el: '#q-app',
     data: function () {
       return {
-        urls: [],
+        url: '',
+        options: ['Core', 'Readability'],
+        select: 'Core',
         loading: false,
-        data: []
+        data: [],
+
+        version: '0.0.1'
       }
     },
     methods: {
       extract: function () {
-        const api = 'http://165.227.28.233:3001'; // todo: handle me properly
+        const api = 'http://134.122.9.84:3000'; // todo: handle me properly
 
-        this.data = [];
         this.loading = true;
 
-        axios.post(api + '/api/v0/extracts/get', { urls: this.urls }).then((r) => {
-          this.data = r.data;
+        axios.post(api + (this.select == 'Core' ? '/url' : '/extractor/readability'), { url: this.url }).then((r) => {
+          console.log(r.data);
+          this.data = [r.data];
         }).catch((e) => {
           this.loading = false;
           this.$q.notify({
@@ -110,9 +105,9 @@
           })
 
           console.log(e); // todo: handle me
-        }).finally(() => {
-          this.loading = false
-        })
+        }).then(() => {
+          this.loading = false;
+        });
       }
     }
   })

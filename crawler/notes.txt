@@ -1,9 +1,9 @@
 # Instances
-	165.227.21.173 - 2gb/2cpu - CRAWLER_INDEX=0
-	165.227.28.233 (to be replaced with: 159.203.86.195) - 2gb/2cpu - CRAWLER_INDEX=NOT_SET
-	159.89.128.168 - 2gb/2cpu - CRAWLER_INDEX=1
-	159.89.130.28 - 2gb/2cpu - CRAWLER_INDEX=2
-	134.122.9.84 - 1cpu/1gb - CRAWLER_INDEX=3
+	165.227.21.173 - 2gb/2cpu
+	159.203.86.195 - 2gb/2cpu - Client
+	159.89.128.168 - 2gb/2cpu
+	159.89.130.28 - 2gb/2cpu
+	134.122.9.84 - 1cpu/1gb - Api
 
 # Reset crawler script
 // It needs the path var for the crontab
@@ -107,3 +107,25 @@
 	SET GLOBAL local_infile=1;
 	mysql --local-infile=1 -u root -p // note: --local-infile=1
 	load data local infile 'top-1m.csv' into table extractor.sites fields terminated by ',' enclosed by '"' lines terminated by '\n' (url);
+
+
+# Note after chaning to restruct branch
+	git fetch --all
+	git add -A .
+	git commit -m "..."
+	git checkout -b restruct origin/restruct
+
+	yarn install
+
+	#!/bin/bash
+	PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+	cd /root/headless-crawler/crawler
+	pkill chrome
+	pkill node
+	pkill ts-node
+	yarn shell --tabs=10 --waitfor=3000
+
+	CRAWLER=159.89.130.28
+	API_URL=http://134.122.9.84:3000
+
+	*/32 * * * * /bin/bash -c "/root/headless-crawler/crawler/resetCrawler.sh" > /tmp/crawler.log &

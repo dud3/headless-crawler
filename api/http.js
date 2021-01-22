@@ -68,6 +68,7 @@ app.post('/api/v0/extracts/get', function (req, res) {
     req.body.urls.map(u => {
       let extract = new iextract();
       extract.originUrl = u;
+      extract.status = 0;
 
       rows.map(row => {
         if (row.originUrl == u) {
@@ -90,6 +91,8 @@ app.post('/api/v0/extracts/store', function (req, res) {
 
   const extract = new iextract(req.body);
 
+  const status = (extract.error && extract.error.length > 0 ? -1 : 1) || 0
+
   try {
     const sql = `
       insert into extracts set
@@ -107,7 +110,8 @@ app.post('/api/v0/extracts/store', function (req, res) {
       contentReaderable = '${extract.contentReaderable}',
       loadSpeed = '${extract.loadSpeed}',
       error = "${addSlashes(extract.error)}",
-      crawler = '${addSlashes(extract.crawler)}'
+      crawler = '${addSlashes(extract.crawler)}',
+      status = ${status}
     `
 
     if (process.env.DEBUG) console.log(sql);
@@ -151,6 +155,22 @@ app.get('/api/v0/sites/lock', function (req, res) {
   } else {
     res.status(400).json([]);
   }
+});
+
+app.get('/api/v0/stats', function (req, res) {
+  const crawled = `select count(id) as crawled from extracts where \`status\` = 1`;
+  const error = `select count(id) as errors from extracts where \`status\` = -1`;
+
+  if (process.env.DEBUG) console.log(crawled, error);
+
+  dbSql.query(crawled, (err, r0) => {
+    dbSql.query(error, (err, r1) => {
+      res.json({
+        crawled: r0[0].crawled,
+        errors: r1[0].errors
+      })
+    });
+  });
 });
 
 http.listen(port, function() {
