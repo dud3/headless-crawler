@@ -5,8 +5,6 @@
   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
   <script src="https://cdn.jsdelivr.net/npm/quasar/dist/quasar.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.0/axios.js" integrity="sha512-bYkaBWaFtfPIMYt9+CX/4DWgfrjcHinjerNYxQmQx1VM76eUsPPKZa5zWV8KksVkBF/DaHSADCwil2J5Uq2ctA==" crossorigin="anonymous"></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.js"></script>
 </header>
 
 <body>
@@ -23,12 +21,24 @@
       <q-page-container>
         <q-form @submit="extract">
           <div class="row q-pt-md justify-center">
-            <div class="col-3">
-               <q-input :disable="loading" :loading="loading" v-model="url" label="Extract site... (e.x: https://google.com)" outlined color="primary">
-                 <template v-slot:append>
-                    <q-icon name="search" v-show="!loading" />
-                  </template>
-               </q-input>
+            <div class="col-6">
+               <q-select
+                  label="e.x: domain.com them click Enter"
+                  filled
+                  v-model="urls"
+                  use-input
+                  use-chips
+                  multiple
+                  hide-dropdown-icon
+                  input-debounce="0"
+                  new-value-mode="add"
+                  style="width: 100%"
+                />
+            </div>
+          </div>
+          <div class="row justify-center q-pa-md">
+            <div class="col-1">
+              <q-btn type="submit" label="Fetch" :disable="loading || urls.length == 0" :loading="loading" style="height: 100%" outlined color="primary" size="lg" />
             </div>
           </div>
         </q-form>
@@ -45,7 +55,9 @@
                   <q-card-section>
                     <q-list bordered separator>
                       <q-item clickable v-ripple v-for="(item, index) in data" :key="index" class="ellipsis">
-                        <q-item-section class="ellipsis"><span class="text-bold">{{ item.type }}</span> {{ item.url }}</q-item-section>
+                        <q-item-section class="ellipsis"><span class="text-bold">
+                          <pre>{{ item }}</pre>
+                        </q-item-section>
                       </q-item>
                     </q-list>
                   </q-card-section>
@@ -56,19 +68,16 @@
         </div>
       </q-page-container>
 
+
       <q-footer elevated class="bg-grey-8 text-white">
         <q-toolbar>
           <q-toolbar-title style="font-size: 12px;">
-            Version: {{ version }}
+            Version: 0.0.1
           </q-toolbar-title>
         </q-toolbar>
       </q-footer>
     </q-layout>
   </div>
-
-  <script>
-    window.socket = io("http://localhost:3001");
-  </script>
 
   <script>
   //
@@ -78,41 +87,32 @@
     el: '#q-app',
     data: function () {
       return {
-        url: '',
-        select: 'http',
+        urls: [],
         loading: false,
-
-        data: [],
-
-        version: '0.0.1'
-      }
-    },
-    created () {
-      const arr = {
-        'request-blocked': (url) => {
-          console.log(url);
-          this.data.push(url);
-        },
-        'request-redirected': (request) => {},
-        'request-whitelisted': (request) => {},
-        'csp-injected': (request) => {},
-        'script-injected': (script, url) => {},
-        'style-injected': (script, url) =>  {},
-        'browser-tab-closed': () => { this.loading = false; this.$q.notify({ position: 'top', color: 'green', message: 'Site extracted (browser tab closed)' }) }
-      };
-
-      for (const key in arr) {
-        window.socket.on(key, arr[key]);
+        data: []
       }
     },
     methods: {
       extract: function () {
+        const api = 'http://localhost:3002'; // todo: handle me properly
+
         this.data = [];
         this.loading = true;
 
-        console.log(this.url, window.socket);
+        axios.post(api + '/extractor/readability', { urls: this.urls }).then((r) => {
+          this.data = r.data;
+        }).catch((e) => {
+          this.loading = false;
+          this.$q.notify({
+            position: 'top',
+            color: 'red',
+            message: "Something went wrong or server is down!"
+          })
 
-        window.socket.emit("send-url", this.url);
+          console.log(e); // todo: handle me
+        }).finally(() => {
+          this.loading = false
+        })
       }
     }
   })

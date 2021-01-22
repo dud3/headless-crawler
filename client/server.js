@@ -20,6 +20,10 @@ app.get("/socket-client", (req, res) => {
   res.sendFile(path.resolve("./socket.html"));
 });
 
+app.get("/readability", (req, res) => {
+  res.sendFile(path.resolve("./readability.html"));
+});
+
 const server = http.listen(port, function() {
   console.log("listening on *:" + port);
 });
