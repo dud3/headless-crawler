@@ -16,6 +16,7 @@ const sql = `
     \`url\` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
     \`title\` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
     \`blockedRequests\` int NOT NULL,
+    \`blockedRequestsArr\` mediumtext NOT NULL COMMENT 'json' AFTER \`blockedRequests\`,
     \`totalRequests\` int NOT NULL,
     \`canvasFingerprint\` int NOT NULL,
     \`keyLogging\` int NOT NULL,

@@ -86,6 +86,7 @@ const instance = async () => {
         theExtract.url = extract.url;
         theExtract.title = addSlashes(extract.title) || '',
         theExtract.blockedRequests = (extract.blocked && extract.blocked.length) || 0,
+        theExtract.blockedRequestsArr = (extract.blocked && JSON.stringify(extract.blocked)) || '';
         theExtract.totalRequests = extract.requests.amount,
         theExtract.canvasFingerprint = 0,
         theExtract.keyLogging = Object.keys(extract.reports.key_logging).length,
@@ -102,8 +103,8 @@ const instance = async () => {
         npage.extract = theExtract;
         resolve(npage);
       } catch (err) {
-        // note: these cause infinite loop
 
+        // note: these cause infinite loop
         if (err.message == 'Error: Protocol error (Page.navigate): Target closed.' ||
             err.message == 'Error: Protocol error (Page.navigate): Session closed. Most likely the page has been closed.') {
           process.exit();
