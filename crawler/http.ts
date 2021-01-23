@@ -29,7 +29,7 @@ app.use(bodyParser.raw());
 (async () => {
   const browser = new Browser({
     id: 'xs',
-    headless: false,
+    headless: true,
     blocker: true,
     block: ["blockMedias", "blockImages", "blockStyles", "blockFonts"],
     chromeArgs: [
