@@ -1,16 +1,14 @@
 import dbSql from "./db-sql";
 
-import Browser, { Npage, Extract } from './Browser';
+import Browser, { Npage, Url, Extract } from './Browser';
 
-import core from "./core";
 import readability from "./readability";
 
-import * as path from "path";
-
-const port = 3001
+const port = 3002
 const express = require('express')
 const bodyParser = require('body-parser');
 const app = express();
+
 app.set("port", port);
 
 let http = require("http").Server(app);
@@ -24,12 +22,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
 
+// todo: remove me
+
 // Browser instances
 
 (async () => {
-  /*
   const browser = new Browser({
     id: 'xs',
+    headless: true,
     blocker: true,
     block: ["blockMedias", "blockImages", "blockStyles", "blockFonts"],
     chromeArgs: [
@@ -37,56 +37,80 @@ app.use(bodyParser.raw());
     "--load-extension=/home/dud3/git/headless-crawler/extension/bypass-paywalls-chrome-clean"
   ]});
   await browser.launch();
-  await browser.newPages(20);
-  */
+
+  const pages: Array<Npage> = await browser.newPages([]);
 
   app.get('/', function (req: any, res: any) {
     res.send("The rest api layer of the extractor, api docs coming soon...");
   });
 
-  app.post('/api/v0/extracts/get', function (req: any, res: any) {
-    const condition = req.body.urls.map(u => `'${u}'`).join(',');
-    const sql = `select * from extracts where originUrl in(${condition}) `;
-
-    console.log(sql);
-
-    const extracts: Array<Extract> = [];
-    dbSql.query(sql, (err, rows) => {
-
-      req.body.urls.map(u => {
-        let extract = new Extract();
-        extract.originUrl = u;
-
-        rows.map(row => {
-          row = <Extract>row;
-
-          if (row.originUrl == u) {
-            extract = Object.assign(extract, row);
-            extract.status = extract.error.length > 0 ? -1 : 1;
-          }
-        });
-
-        extracts.push(extract);
-      });
-
-      res.json(extracts);
-    });
-  });
-
-  /*
   app.post('/extractor/readability', async function (req: any, res: any) {
-    const pages: Array<Npage> = await browser.newPages([req.body.url]);
 
-    pages.map(async page => {
-      const extract = await readability.main(page);
+    // todo: remove me
 
-      res.json(extract);
+    const iextract = (e: {} = {}) => {
+      let o = {
+        url: "",
+        byline: null,
+        content: "",
+        dir: null,
+        excerpt: "",
+        length: 0,
+        siteName: "",
+        textContent: "",
+        title: ""
+      };
 
-      await browser.closePage(page);
-      await browser.newPages(1);
+      if (Object.keys(e).length > 0) {
+        for (const k in e) {
+          if (o[k] !== undefined && e[k] !== null) {
+            o[k] = e[k];
+          }
+        }
+      }
+
+      return o;
+    }
+
+    console.log(req.body.urls);
+
+    const urls: Array<Url> = [];
+
+    req.body.urls.map(url => {
+      urls.push({ id: Math.random() + '', url: 'http://' + url });
+    })
+
+    console.log(urls);
+
+    const promisses: Array<Promise<Npage>> = []
+    const npages: Array<Npage> = await browser.newPages(urls);
+    const extracts = [];
+
+    npages.map(async npage => {
+      promisses.push(new Promise(async (resolve, reject) => {
+        try {
+          const extract = iextract(await readability.main(npage));
+
+          extract.url = npage.url.url;
+          extracts.push(extract);
+
+          await browser.closePage(npage);
+
+          resolve(npage);
+        } catch (e) {
+          extracts.push(iextract({ url: npage.url.url }));
+          await browser.closePage(npage);
+
+          resolve(npage);
+        }
+      }));
     });
+
+    Promise.all(promisses).then(() => {
+      res.json(extracts);
+    })
+
   });
-  */
 
   http.listen(port, function() {
     console.log("listening on *:" + port);

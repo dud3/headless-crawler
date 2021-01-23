@@ -14,6 +14,7 @@ export class Extract {
   url: string = '';
   title: string = '';
   blockedRequests: number = 0;
+  blockedRequestsArr: string = '';
   totalRequests: number = 0;
   canvasFingerprint: number = 0;
   keyLogging: number = 0;
