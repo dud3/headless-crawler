@@ -168,7 +168,7 @@ app.get('/api/v0/stats', function (req, res) {
   dbSql.query(crawled, (err, r0) => {
     dbSql.query(error, (err, r1) => {
       res.json({
-	crawled: r0[0].crawled + 320000,
+	crawled: r0[0].crawled,
         errors: r1[0].errors
       })
     });
