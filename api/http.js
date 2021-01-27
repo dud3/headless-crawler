@@ -6,6 +6,8 @@ const dbSql = require('./db-sql');
 
 const { addSlashes, stripSlashes } = require('slashes');
 
+const readabilityProxy = require('./proxy');
+
 const app = express();
 const port = 3000
 
@@ -57,7 +59,19 @@ function iextract(e) {
   return o;
 }
 
-app.post('/api/v0/extracts/get', function (req, res) {
+app.post('/api/v0/extracts/get', async function (req, res) {
+  if (req.body.readability) {
+    try {
+      const rExtracts = await readabilityProxy.post('/extractor/readability', { urls: req.body.urls });
+
+      return res.json(rExtracts.data);
+    } catch (e) {
+      res.statusCode = 404;
+      console.log(e);
+      return res.json({ message: 'Request failed' });
+    }
+  }
+
   const condition = req.body.urls.map(u => `'${u}'`).join(',');
   const sql = `select * from extracts where originUrl in(${condition}) `;
 

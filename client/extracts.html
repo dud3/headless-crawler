@@ -34,6 +34,7 @@
                   new-value-mode="add"
                   style="width: 100%"
                 />
+                <q-toggle v-model="readability" label="Readability proxy" class="q-mb-md" />
             </div>
           </div>
           <div class="row justify-center q-pa-md">
@@ -89,6 +90,7 @@
       return {
         urls: [],
         loading: false,
+        readability: false,
         data: []
       }
     },
@@ -99,7 +101,7 @@
         this.data = [];
         this.loading = true;
 
-        axios.post(api + '/api/v0/extracts/get', { urls: this.urls }).then((r) => {
+        axios.post(api + '/api/v0/extracts/get', { urls: this.urls, readability: this.readability }).then((r) => {
           this.data = r.data;
         }).catch((e) => {
           this.loading = false;
