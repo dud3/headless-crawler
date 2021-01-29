@@ -32,9 +32,9 @@ app.use(bodyParser.raw());
 // Browser instances
 
 (async () => {
-  const browser = new Browser({
+  let browser = new Browser({
     id: 'xs',
-    headless: true,
+    headless: false,
     blocker: true,
     block: ["blockMedias", "blockImages", "blockStyles", "blockFonts"],
     chromeArgs: [
@@ -45,9 +45,9 @@ app.use(bodyParser.raw());
 
   let browser1 = new Browser({
     id: 'BlockerDisabled',
-    headless: true,
+    headless: false,
     blocker: false,
-    block: ["blockMedias", "blockImages", "blockStyles", "blockFonts"],
+    // block: ["blockMedias", "blockImages", "blockStyles", "blockFonts"],
     chromeArgs: [
     "--disable-extensions-except=/home/dud3/git/headless-crawler/extension/bypass-paywalls-chrome-clean",
     "--load-extension=/home/dud3/git/headless-crawler/extension/bypass-paywalls-chrome-clean"
@@ -128,9 +128,9 @@ app.use(bodyParser.raw());
 
     const loadJs = req.body.blockerDisabled && req.body.blockerDisabled == true
 
-    if (loadJs) { let browser = browser1; }
+    if (loadJs) { browser = browser1; }
 
-    console.log(`Browser: ${browser1.id}`);
+    console.log(`Browser: ${browser.id}`);
     console.log(req.body);
 
     const urls: Array<Url> = [];
