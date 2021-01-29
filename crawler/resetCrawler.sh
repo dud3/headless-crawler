@@ -5,4 +5,3 @@ pkill chrome
 pkill node
 pkill ts-node
 yarn shell --tabs=10 --waitfor=3000
-

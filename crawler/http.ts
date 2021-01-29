@@ -1,6 +1,11 @@
 import dbSql from "./db-sql";
 
+import { sparseInt, wait, rand } from "./utils";
+const { addSlashes, stripSlashes } = require('slashes');
+
+import puppeteer, { LoadEvent, Page, EmulateOptions } from "puppeteer";
 import Browser, { Npage, Url, Extract } from './Browser';
+import core from "./core";
 
 import readability from "./readability";
 
@@ -29,7 +34,7 @@ app.use(bodyParser.raw());
 (async () => {
   const browser = new Browser({
     id: 'xs',
-    headless: true,
+    headless: false,
     blocker: true,
     block: ["blockMedias", "blockImages", "blockStyles", "blockFonts"],
     chromeArgs: [
@@ -44,15 +49,53 @@ app.use(bodyParser.raw());
     res.send("The rest api layer of the extractor, api docs coming soon...");
   });
 
+  // ---
+
+  app.post('/extractor/extract' , async function(req: any, res: any) {
+    const urls: Array<Url> = [];
+
+    req.body.urls.map(url => {
+      urls.push({ id: Math.random() + '', url: 'http://' + url });
+    })
+
+    console.log(urls);
+
+    const promisses: Array<Promise<Npage>> = []
+    const npages: Array<Npage> = await browser.newPages(urls);
+    const extracts = [];
+
+    npages.map(async npage => {
+      promisses.push(new Promise(async (resolve, reject) => {
+        try {
+          const extract = await core(npage.blocker, npage.page, npage.url.url);
+
+          extracts.push(extract);
+
+          await browser.closePage(npage);
+
+          resolve(npage);
+        } catch (e) {
+          extracts.push({ success: false });
+          await browser.closePage(npage);
+
+          resolve(npage);
+        }
+      }));
+    });
+
+    Promise.all(promisses).then(() => { res.json(extracts); });
+  });
+
+  // ---
+
   app.post('/extractor/readability', async function (req: any, res: any) {
-
     // todo: remove me
-
     const iextract = (e: {} = {}) => {
       let o = {
         url: "",
         byline: null,
         content: "",
+        fullContent: "",
         dir: null,
         excerpt: "",
         length: 0,
@@ -89,7 +132,10 @@ app.use(bodyParser.raw());
     npages.map(async npage => {
       promisses.push(new Promise(async (resolve, reject) => {
         try {
-          const extract = iextract(await readability.main(npage));
+          const read = await readability.main(npage);
+          const extract = iextract(read.read);
+
+          extract.fullContent = read.fullContent;
 
           extract.url = npage.url.url;
           extracts.push(extract);

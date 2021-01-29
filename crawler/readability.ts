@@ -21,7 +21,9 @@ async function main (npage: Npage) {
     }())
   `);
 
-  return read;
+  const fullContent: string = await npage.page.evaluate(() => document.querySelector('*').outerHTML);
+
+  return { read, fullContent };
 }
 
 export default {

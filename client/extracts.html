@@ -34,7 +34,7 @@
                   new-value-mode="add"
                   style="width: 100%"
                 />
-                <q-toggle v-model="readability" label="Readability proxy" class="q-mb-md" />
+                <!-- q-toggle v-model="readability" label="Readability proxy" class="q-mb-md" / -->
             </div>
           </div>
           <div class="row justify-center q-pa-md">
@@ -96,15 +96,15 @@
     },
     methods: {
       extract: function () {
-        const api = 'http://134.122.9.84:3000'; // todo: handle me properly
+        const api = 'http://localhost:3002/extractor/readability' // todo: handle me properly
 
-        this.data = [];
-        this.loading = true;
+        this.data = []
+        this.loading = true
 
-        axios.post(api + '/api/v0/extracts/get', { urls: this.urls, readability: this.readability }).then((r) => {
+        axios.post(api, { urls: this.urls, readability: this.readability }).then((r) => {
           this.data = r.data;
         }).catch((e) => {
-          this.loading = false;
+          this.loading = false
           this.$q.notify({
             position: 'top',
             color: 'red',

@@ -15,8 +15,6 @@ const fs = require('fs');
       };
 
       fs.writeFileSync('./cache/stats.json', JSON.stringify(res));
-
-      process.exit();
     });
   });
 })();

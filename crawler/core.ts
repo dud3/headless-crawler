@@ -33,7 +33,7 @@ const { Readability } = require('@mozilla/readability');
 function rexecutor() {
   return new Readability({}, document).parse();
 }
-export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeout: number = 0, waitFor: number = 0, numPages: number = 3) => {
+export default async (blocker: PuppeteerBlocker, page: Page, url: string, timeout: number = 60000, waitFor: number = 0, numPages: number = 3) => {
   const defaultWaitUntil = "domcontentloaded"; // networkidle2, networkidle0, load, domcontentloaded
 
   const extract = {
