@@ -132,7 +132,7 @@ app.post('/api/v0/extracts/store', function (req, res) {
 
     if (process.env.DEBUG) console.log(sql);
 
-    dbSql.query(`update sites set crawled = 1, error = '${addSlashes(extract.error)}' where url = "${addSlashes(extract.originUrl)}"`);
+    dbSql.query(`update sites set crawled = 1, error = '' where url = "${addSlashes(extract.originUrl)}"`);
 
     dbSql.query(sql, (err) => { if (err) throw err; else res.status(200).json(true); });
   } catch (e) {

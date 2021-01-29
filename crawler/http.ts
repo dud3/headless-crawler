@@ -34,7 +34,7 @@ app.use(bodyParser.raw());
 (async () => {
   const browser = new Browser({
     id: 'xs',
-    headless: true,
+    headless: false,
     blocker: true,
     block: ["blockMedias", "blockImages", "blockStyles", "blockFonts"],
     chromeArgs: [
@@ -43,7 +43,16 @@ app.use(bodyParser.raw());
   ]});
   await browser.launch();
 
-  const pages: Array<Npage> = await browser.newPages([]);
+  let browser1 = new Browser({
+    id: 'BlockerDisabled',
+    headless: false,
+    blocker: false,
+    block: ["blockMedias", "blockImages", "blockStyles", "blockFonts"],
+    chromeArgs: [
+    "--disable-extensions-except=/home/dud3/git/headless-crawler/extension/bypass-paywalls-chrome-clean",
+    "--load-extension=/home/dud3/git/headless-crawler/extension/bypass-paywalls-chrome-clean"
+  ]});
+  await browser1.launch();
 
   app.get('/', function (req: any, res: any) {
     res.send("The rest api layer of the extractor, api docs coming soon...");
@@ -115,7 +124,14 @@ app.use(bodyParser.raw());
       return o;
     }
 
-    console.log(req.body.urls);
+    // Swap browsers
+
+    const loadJs = req.body.blockerDisabled && req.body.blockerDisabled == true
+
+    if (loadJs) { let browser = browser1; }
+
+    console.log(`Browser: ${browser1.id}`);
+    console.log(req.body);
 
     const urls: Array<Url> = [];
 
@@ -132,7 +148,7 @@ app.use(bodyParser.raw());
     npages.map(async npage => {
       promisses.push(new Promise(async (resolve, reject) => {
         try {
-          const read = await readability.main(npage);
+          const read = await readability.main(npage, loadJs);
           const extract = iextract(read.read);
 
           extract.fullContent = read.fullContent;

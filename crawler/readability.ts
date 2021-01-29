@@ -10,8 +10,8 @@ function rexecutor() {
   return new Readability({}, document).parse();
 }
 
-async function main (npage: Npage) {
-  await npage.page.goto(npage.url.url, { timeout: 0, waitUntil: 'domcontentloaded' });
+async function main (npage: Npage, loadJs: boolean = false) {
+  await npage.page.goto(npage.url.url, { timeout: 0, waitUntil: loadJs ? 'load' : 'domcontentloaded' });
 
   const read = await npage.page.evaluate(`
     (function(){
