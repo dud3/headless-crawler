@@ -9,9 +9,9 @@ dbSql.query("select originUrl from extracts where error LIKE '%Timeout%'", (err,
         dbSql.query(up, (err) => {
             if (!err) {
                 const del = `delete from extracts where originUrl = '${r.originUrl}'`;
-                console.log(del);
-                dbSql.query(del);
-            }
-        });
-    })
+	    }
+	})
+    });
 });
+
+
