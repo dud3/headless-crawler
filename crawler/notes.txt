@@ -3,7 +3,7 @@
 	159.203.86.195 - 2gb/2cpu - Client
 	159.89.128.168 - 2gb/2cpu
 	159.89.130.28 - 2gb/2cpu - Readability
-	134.122.9.84 - 1cpu/1gb - Api
+	134.122.9.84 - 1cpu/1gb - Api (db)
 
 # Reset crawler script
 // It needs the path var for the crontab

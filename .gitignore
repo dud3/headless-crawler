@@ -11,3 +11,7 @@ web_modules/
 extract-dir/
 
 .env
+
+urls.json
+crawler/urls.json
+

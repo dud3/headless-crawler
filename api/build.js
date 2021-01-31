@@ -16,7 +16,7 @@ const sql = `
     \`url\` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
     \`title\` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
     \`blockedRequests\` int NOT NULL,
-    \`blockedRequestsArr\` mediumtext NOT NULL COMMENT 'json' AFTER \`blockedRequests\`,
+    \`blockedRequestsArr\` mediumtext NOT NULL COMMENT 'json',
     \`totalRequests\` int NOT NULL,
     \`canvasFingerprint\` int NOT NULL,
     \`keyLogging\` int NOT NULL,
@@ -41,7 +41,7 @@ const sql = `
     \`locked\` tinyint(1) NOT NULL DEFAULT '0',
     \`error\` varchar(2024) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
     PRIMARY KEY (\`id\`)
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
   ALTER DATABASE
       extractor
