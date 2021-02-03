@@ -189,6 +189,33 @@ app.get('/api/v0/stats', function (req, res) {
   });
 });
 
+app.get('/api/v0/stats/details', function (req, res) {
+  const errors = {
+    ERR_NAME_NOT_RESOLVED: `select count(id) as ERR_NAME_NOT_RESOLVED from extracts where \`errorCode\` = 0`,
+    ERR_CONNECTION_REFUSED: `select count(id) as ERR_CONNECTION_REFUSED from extracts where \`errorCode\` = 1`,
+    ERR_ABORTED: `select count(id) as ERR_ABORTED from extracts where \`errorCode\` = 2`,
+    ERR_SSL_PROTOCOL_ERROR: `select count(id) as ERR_SSL_PROTOCOL_ERROR from extracts where \`errorCode\` = 3`,
+    ERR_SSL_VERSION_OR_CIPHER_MISMATCH : `select count(id) as ERR_SSL_VERSION_OR_CIPHER_MISMATCH from extracts where \`errorCode\` = 4`,
+    ERR_TIMED_OUT: `select count(id) as ERR_TIMED_OUT from extracts where \`errorCode\` = 5`,
+    ERR_CONNECTION_CLOSED: `select count(id) as ERR_CONNECTION_CLOSED from extracts where \`errorCode\` = 6`,
+    ERR_CONNECTION_RESET: `select count(id) as ERR_CONNECTION_RESET from extracts where \`errorCode\` = 7`
+  };
+
+  if (process.env.DEBUG) console.log(errors);
+
+  let i = Object.keys(errors).length;
+  const resSql = {};
+  for (const key in errors) {
+    dbSql.query(errors[key], (err, r) => {
+      console.log(key, errors[key], r);
+      resSql[key] = r[0][key];
+      i--;
+
+      if (i == 0) return res.json(resSql);
+    });
+  }
+});
+
 http.listen(port, function() {
   console.log("listening on *:" + port);
 });

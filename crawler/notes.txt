@@ -129,3 +129,13 @@
 	API_URL=http://134.122.9.84:3000
 
 	*/32 * * * * /bin/bash -c "/root/headless-crawler/crawler/resetCrawler.sh" > /tmp/crawler.log &
+
+# Error codes
+	0: select count(id) from extracts where error like '%Error: net::ERR_NAME_NOT_RESOLVED%';
+	1: select count(id) from extracts where error like '%Error: net::ERR_CONNECTION_REFUSED%';
+	2: select count(id) from extracts where error like '%ERR_ABORTED%';
+	3: select count(id) from extracts where error like '%ERR_SSL_PROTOCOL_ERROR%';
+	4: select count(id) from extracts where error like '%ERR_SSL_VERSION_OR_CIPHER_MISMATCH%';
+	5: select count(id) from extracts where error like '%ERR_TIMED_OUT%';
+	6: select count(id) from extracts where error like '%ERR_CONNECTION_CLOSED%';
+	7: select count(id) from extracts where error like '%ERR_CONNECTION_RESET%';
