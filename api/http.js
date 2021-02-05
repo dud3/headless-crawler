@@ -199,7 +199,7 @@ app.get('/api/v0/stats/details', function (req, res) {
     ERR_TIMED_OUT: `select count(id) as ERR_TIMED_OUT from extracts where \`errorCode\` = 5`,
     ERR_CONNECTION_CLOSED: `select count(id) as ERR_CONNECTION_CLOSED from extracts where \`errorCode\` = 6`,
     ERR_CONNECTION_RESET: `select count(id) as ERR_CONNECTION_RESET from extracts where \`errorCode\` = 7`,
-    ERR_OTHER: `select count(id) as ERR_OTHER from extracts where \`errorCode\` = -1`
+    ERR_OTHER: `select count(id) as ERR_OTHER from extracts where \`errorCode\` = -1 and status = -1`
   };
 
   if (process.env.DEBUG) console.log(errors);
