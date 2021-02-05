@@ -198,7 +198,8 @@ app.get('/api/v0/stats/details', function (req, res) {
     ERR_SSL_VERSION_OR_CIPHER_MISMATCH : `select count(id) as ERR_SSL_VERSION_OR_CIPHER_MISMATCH from extracts where \`errorCode\` = 4`,
     ERR_TIMED_OUT: `select count(id) as ERR_TIMED_OUT from extracts where \`errorCode\` = 5`,
     ERR_CONNECTION_CLOSED: `select count(id) as ERR_CONNECTION_CLOSED from extracts where \`errorCode\` = 6`,
-    ERR_CONNECTION_RESET: `select count(id) as ERR_CONNECTION_RESET from extracts where \`errorCode\` = 7`
+    ERR_CONNECTION_RESET: `select count(id) as ERR_CONNECTION_RESET from extracts where \`errorCode\` = 7`,
+    ERR_OTHER: `select count(id) as ERR_OTHER from extracts where \`errorCode\` = -1`
   };
 
   if (process.env.DEBUG) console.log(errors);
@@ -207,7 +208,6 @@ app.get('/api/v0/stats/details', function (req, res) {
   const resSql = {};
   for (const key in errors) {
     dbSql.query(errors[key], (err, r) => {
-      console.log(key, errors[key], r);
       resSql[key] = r[0][key];
       i--;
 
