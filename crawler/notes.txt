@@ -131,6 +131,16 @@
 	*/32 * * * * /bin/bash -c "/root/headless-crawler/crawler/resetCrawler.sh" > /tmp/crawler.log &
 
 # Error codes
+	-1: NOT_SET
+	0: ERR_NAME_NOT_RESOLVED
+	1: ERR_CONNECTION_REFUSED,
+	2: ERR_ABORTED
+	3: ERR_SSL_PROTOCOL_ERROR
+	4: ERR_SSL_VERSION_OR_CIPHER_MISMATCH
+	5: ERR_TIMED_OUT
+	6: ERR_CONNECTION_CLOSED
+	7: ERR_CONNECTION_RESET
+
 	0: select count(id) from extracts where error like '%Error: net::ERR_NAME_NOT_RESOLVED%';
 	1: select count(id) from extracts where error like '%Error: net::ERR_CONNECTION_REFUSED%';
 	2: select count(id) from extracts where error like '%ERR_ABORTED%';

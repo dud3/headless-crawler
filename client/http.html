@@ -21,15 +21,25 @@
       <q-page-container>
         <q-form @submit="extract">
           <div class="row q-pt-md justify-center">
-            <div class="col-3">
-               <q-input :disable="loading" :loading="loading" v-model="url" label="Extract site... (e.x: https://google.com)" outlined color="primary">
-                 <template v-slot:append>
-                    <q-icon name="search" v-show="!loading" />
-                  </template>
-               </q-input>
+            <div class="col-6">
+               <q-select
+                  label="e.x: domain.com them click Enter"
+                  filled
+                  v-model="urls"
+                  use-input
+                  use-chips
+                  multiple
+                  hide-dropdown-icon
+                  input-debounce="0"
+                  new-value-mode="add"
+                  style="width: 100%"
+                />
+                <!-- q-toggle v-model="blockerDisabled" label="Blocker disabled" class="q-mb-md" / -->
             </div>
+          </div>
+          <div class="row justify-center q-pa-md">
             <div class="col-1">
-               <q-select v-model="select" :options="options" label="Module" outlined />
+              <q-btn type="submit" label="Fetch" :disable="loading || urls.length == 0" :loading="loading" outlined color="primary" size="lg" />
             </div>
           </div>
         </q-form>
@@ -47,7 +57,7 @@
                     <q-list bordered separator>
                       <q-item clickable v-ripple v-for="(item, index) in data" :key="index" class="ellipsis">
                         <q-item-section class="ellipsis"><span class="text-bold">
-                          <pre>{{ data }}</pre>
+                          <pre>{{ item }}</pre>
                         </q-item-section>
                       </q-item>
                     </q-list>
@@ -63,7 +73,7 @@
       <q-footer elevated class="bg-grey-8 text-white">
         <q-toolbar>
           <q-toolbar-title style="font-size: 12px;">
-            Version: {{ version }}
+            Version: 0.0.1
           </q-toolbar-title>
         </q-toolbar>
       </q-footer>
@@ -78,26 +88,23 @@
     el: '#q-app',
     data: function () {
       return {
-        url: '',
-        options: ['Core', 'Readability'],
-        select: 'Core',
+        urls: [],
         loading: false,
-        data: [],
-
-        version: '0.0.1'
+        blockerDisabled: false,
+        data: []
       }
     },
     methods: {
       extract: function () {
-        const api = 'http://134.122.9.84:3000'; // todo: handle me properly
+        const api = 'http://localhost:3002/extractor/extract' // todo: handle me properly
 
-        this.loading = true;
+        this.data = []
+        this.loading = true
 
-        axios.post(api + (this.select == 'Core' ? '/url' : '/extractor/readability'), { url: this.url }).then((r) => {
-          console.log(r.data);
-          this.data = [r.data];
+        axios.post(api, { urls: this.urls, blockerDisabled: this.blockerDisabled }).then((r) => {
+          this.data = r.data;
         }).catch((e) => {
-          this.loading = false;
+          this.loading = false
           this.$q.notify({
             position: 'top',
             color: 'red',
@@ -105,9 +112,9 @@
           })
 
           console.log(e); // todo: handle me
-        }).then(() => {
-          this.loading = false;
-        });
+        }).finally(() => {
+          this.loading = false
+        })
       }
     }
   })

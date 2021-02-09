@@ -60,18 +60,6 @@ function iextract(e) {
 }
 
 app.post('/api/v0/extracts/get', async function (req, res) {
-  if (req.body.readability) {
-    try {
-      const rExtracts = await readabilityProxy.post('/extractor/readability', { urls: req.body.urls });
-
-      return res.json(rExtracts.data);
-    } catch (e) {
-      res.statusCode = 404;
-      console.log(e);
-      return res.json({ message: 'Request failed' });
-    }
-  }
-
   const condition = req.body.urls.map(u => `'${u}'`).join(',');
   const sql = `select * from extracts where originUrl in(${condition}) `;
 
@@ -91,6 +79,13 @@ app.post('/api/v0/extracts/get', async function (req, res) {
           extract.status = extract.error.length > 0 ? -1 : 1;
         }
       });
+
+      delete extract.totalRequests;
+      delete extract.canvasFingerprint;
+      delete extract.keyLogging;
+      delete extract.sessionRecording;
+      delete extract.contentSize;
+      delete extract.contentReaderable;
 
       extracts.push(extract);
     });

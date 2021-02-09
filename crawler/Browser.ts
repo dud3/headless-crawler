@@ -6,6 +6,7 @@ import fetch from 'node-fetch';
 export interface Url { // scheme://host:port/path?query
   id?: string;
   url: string;
+  blocker?: boolean;
 }
 
 export class Extract {
@@ -58,6 +59,7 @@ class Browser {
   browser: puppeteer.Browser;
   device: EmulateOptions;
   headless: boolean;
+  devtools: boolean = false;
   pages: Array<Npage> = [];
   width: Number;
   height: Number;
@@ -69,6 +71,7 @@ class Browser {
     id = 'x',
     device = puppeteer.devices["iPhone X"],
     headless = true,
+    devtools = false,
     width = 1200,
     height = 600,
     blocker = false,
@@ -77,6 +80,7 @@ class Browser {
   }) {
     this.id = id;
     this.headless = headless;
+    this.devtools = devtools;
     this.width = width;
     this.height = height;
 
@@ -100,6 +104,7 @@ class Browser {
     this.browser = await puppeteer.launch({
       args,
       defaultViewport: null,
+      devtools: this.devtools,
       headless: this.headless
     });
   }
@@ -136,7 +141,10 @@ class Browser {
 
     if (this.blocker) {
       npage.blocker = await this.getBlocker();
+
       await npage.blocker.enableBlockingInPage(page);
+
+      if (!url.blocker) { await npage.blocker.disableBlockingInPage(page); }
 
       await (this.block.map(e => { npage.blocker[e](); }));
     }

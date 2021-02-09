@@ -41,12 +41,12 @@ const argv = {
     f: v => sparseInt(v, 60000)
   },
   "--syncerrors": {
-    v: "" as any, // all,epte,oe
-    f: (v) => v.split(',')
-  },
-  "--synctimeouts": {
-    v: false,
-    f: eval
+    /*
+      -1: NOT_SET, 0: ERR_NAME_NOT_RESOLVED, 1: ERR_CONNECTION_REFUSED, 2: ERR_ABORTED, 3: ERR_SSL_PROTOCOL_ERROR, 4: ERR_SSL_VERSION_OR_CIPHER_MISMATCH
+      5: ERR_TIMED_OUT, 6: ERR_CONNECTION_CLOSED, 7: ERR_CONNECTION_RESET
+    */
+    v: "",
+    f: v => v.split(',').map(f => parseInt(f)).filter(f => !isNaN(f))
   },
   "--debug": {
     v: false,
@@ -195,7 +195,7 @@ const instance = async () => {
     return urls;
   }
 
-  const browser = new Browser({ id: "ys", blocker: true, headless: argv['--headless'].v });
+  const browser = new Browser({ id: "ys", blocker: true, headless: argv['--headless'].v, devtools: true });
   await browser.launch();
 
   let tabs: number = argv['--tabs'].v;
@@ -214,9 +214,9 @@ const instance = async () => {
 
   const cstime = Date.now();
 
-  console.log(`Crawler: ${process.env.CRAWLER} -> Tabs: ${promisses.length}\n`);
-
   pages.map((npage) => { promisses.push(() => extractPromise(npage)); }); // Initial tabs
+
+  console.log(`Crawler: ${process.env.CRAWLER} -> Tabs: ${promisses.length}\n`);
 
   // kickstart
 

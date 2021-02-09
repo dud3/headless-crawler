@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 import dbSql from "./db-sql";
 
 import { sparseInt, wait, rand } from "./utils";
@@ -27,11 +29,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
 
-// todo: remove me
-
-// Browser instances
-
 (async () => {
+
+  // Browser instances
+
   let browser = new Browser({
     id: 'xs',
     headless: false,
@@ -54,6 +55,10 @@ app.use(bodyParser.raw());
   ]});
   await browser1.launch();
 
+  // Whitelisted urls
+
+  const urlsWhitelisted = JSON.parse(fs.readFileSync('urls-whitelist.json'));
+
   app.get('/', function (req: any, res: any) {
     res.send("The rest api layer of the extractor, api docs coming soon...");
   });
@@ -64,8 +69,12 @@ app.use(bodyParser.raw());
     const urls: Array<Url> = [];
 
     req.body.urls.map(url => {
-      urls.push({ id: Math.random() + '', url: 'http://' + url });
+      urls.push({ id: Math.random() + '', url: 'http://' + url, blocker: true });
     })
+
+    console.log("Whitelisted urls: ", urlsWhitelisted);
+
+    urls.map(u => { u.blocker = !(urlsWhitelisted.indexOf(u.url.slice(7, u.url.length)) > -1) });
 
     console.log(urls);
 
@@ -136,7 +145,7 @@ app.use(bodyParser.raw());
     const urls: Array<Url> = [];
 
     req.body.urls.map(url => {
-      urls.push({ id: Math.random() + '', url: 'http://' + url });
+      urls.push({ id: Math.random() + '', url: 'http://' + url, blocker: true });
     })
 
     console.log(urls);
