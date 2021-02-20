@@ -36,7 +36,7 @@ app.use(bodyParser.raw());
   let browser = new Browser({
     id: 'xs',
     headless: false,
-    blocker: true,
+    blocker: false,
     block: ["blockMedias", "blockImages", "blockStyles", "blockFonts"],
     chromeArgs: [
     "--disable-extensions-except=/home/dud3/git/headless-crawler/extension/bypass-paywalls-chrome-clean",
@@ -55,10 +55,6 @@ app.use(bodyParser.raw());
   ]});
   await browser1.launch();
 
-  // Whitelisted urls
-
-  const urlsWhitelisted = JSON.parse(fs.readFileSync('urls-whitelist.json'));
-
   app.get('/', function (req: any, res: any) {
     res.send("The rest api layer of the extractor, api docs coming soon...");
   });
@@ -71,10 +67,6 @@ app.use(bodyParser.raw());
     req.body.urls.map(url => {
       urls.push({ id: Math.random() + '', url: 'http://' + url, blocker: true });
     })
-
-    console.log("Whitelisted urls: ", urlsWhitelisted);
-
-    urls.map(u => { u.blocker = !(urlsWhitelisted.indexOf(u.url.slice(7, u.url.length)) > -1) });
 
     console.log(urls);
 
@@ -133,19 +125,24 @@ app.use(bodyParser.raw());
       return o;
     }
 
-    // Swap browsers
-
-    const loadJs = req.body.blockerDisabled && req.body.blockerDisabled == true
-
-    if (loadJs) { browser = browser1; }
-
     console.log(`Browser: ${browser.id}`);
     console.log(req.body);
 
     const urls: Array<Url> = [];
 
+    // Swap browsers
+
+    const loadJs = req.body.blockerDisabled && req.body.blockerDisabled == true
+
+    // todo: use this
+
+    if (loadJs) { browser = browser1; }
+
+    const urlsWhitelisted = JSON.parse(fs.readFileSync('urls-whitelist.json'));
+
     req.body.urls.map(url => {
-      urls.push({ id: Math.random() + '', url: 'http://' + url, blocker: true });
+      const blocker = (urlsWhitelisted.indexOf(url) > -1) ? undefined : true
+      urls.push({ id: Math.random() + '', url: 'http://' + url, blocker: blocker });
     })
 
     console.log(urls);
@@ -157,7 +154,7 @@ app.use(bodyParser.raw());
     npages.map(async npage => {
       promisses.push(new Promise(async (resolve, reject) => {
         try {
-          const read = await readability.main(npage, loadJs);
+          const read = await readability.main(npage, npage.blocker == undefined ? true : false);
           const extract = iextract(read.read);
 
           extract.fullContent = read.fullContent;
