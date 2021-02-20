@@ -149,3 +149,36 @@
 	5: select count(id) from extracts where error like '%ERR_TIMED_OUT%';
 	6: select count(id) from extracts where error like '%ERR_CONNECTION_CLOSED%';
 	7: select count(id) from extracts where error like '%ERR_CONNECTION_RESET%';
+	8: select count(id) from extracts where error = 'Error: Navigation failed because browser has disconnected!'
+	9: select count(id) from extracts where error = 'Cannot read property 'length' of null'
+	10: select cound(id) from extracts where error = 'Error: Execution context was destroyed, most likely because of a navigation.'
+	11: like '%Error: Evaluation failed: TypeError: this.each is not a function%'
+
+
+# Useful sql commands
+
+-- Remove extracts duplicates
+DELETE FROM extracts where id in (
+	select * from (
+		select a.id from extracts a
+		JOIN extracts b
+		ON b.originUrl = a.originUrl
+		AND b.id <> a.id
+		AND a.error <> ''
+		and b.error <> ''
+		limit 20000 -- ATTENTION
+	) as p
+)
+
+-- Remove site duplicates
+delete from sites where id in (
+	select * from (
+		select s1.id from sites s0
+		join sites s1
+		on s1.id <> s0.id
+		and s1.url = s0.url
+		and s0.error = ''
+		and s0.crawled = 0
+		and s0.locked = 0
+	) as p
+);

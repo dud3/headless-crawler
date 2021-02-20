@@ -80,7 +80,7 @@ const instance = async () => {
 
       try {
         // Extraction
-        const extract = await core(npage.blocker, npage.page, "https://" + npage.url.url, argv["--timeout"].v, argv["--waitfor"].v);
+        const extract = await core(npage.blocker, npage.page, "http://" + npage.url.url, argv["--timeout"].v, argv["--waitfor"].v);
 
         theExtract.originUrl = addSlashes(npage.url.url);
         theExtract.url = extract.url;
@@ -206,6 +206,8 @@ const instance = async () => {
 
   let urlsLimit = 1024;
   let urls = await fetchUrls();
+
+  console.log(urls);
 
   if (urls.length === 0) { console.log("Nothing to crawl."); process.exit() };
 

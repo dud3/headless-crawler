@@ -28,6 +28,7 @@ const sql = `
     \`error\` text COLLATE utf8mb4_unicode_ci NOT NULL,
     \`errorCode\` TINYINT NOT NULL DEFAULT '-1',
     \`status\` tinyint NOT NULL DEFAULT '0' COMMENT '-1, 0, 1',
+    \`crawlTime\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (\`id\`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
