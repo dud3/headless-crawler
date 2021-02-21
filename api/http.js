@@ -111,7 +111,7 @@ app.post('/api/v0/extracts/store', function (req, res) {
       url = '${extract.url}',
       title = '${extract.title}',
       blockedRequests = '${extract.blockedRequests}',
-      blockedRequestsArr = '${extract.blockedRequestsArr}',
+      blockedRequestsArr = '',
       totalRequests = '${extract.totalRequests}',
       canvasFingerprint = '${extract.canvasFingerprint}',
       keyLogging = '${extract.keyLogging}',

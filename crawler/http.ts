@@ -154,7 +154,7 @@ app.use(bodyParser.raw());
     npages.map(async npage => {
       promisses.push(new Promise(async (resolve, reject) => {
         try {
-          const read = await readability.main(npage, npage.blocker == undefined ? true : false);
+          const read = await readability.main(npage, loadJs);
           const extract = iextract(read.read);
 
           extract.fullContent = read.fullContent;
