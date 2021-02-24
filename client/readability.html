@@ -34,7 +34,7 @@
                   new-value-mode="add"
                   style="width: 100%"
                 />
-                <q-toggle v-model="blockerDisabled" label="Blocker disabled" class="q-mb-md" />
+                <q-toggle v-model="proxy" label="Proxy" class="q-mb-md" />
             </div>
           </div>
           <div class="row justify-center q-pa-md">
@@ -90,7 +90,7 @@
       return {
         urls: [],
         loading: false,
-        blockerDisabled: false,
+        proxy: false,
         data: []
       }
     },
@@ -101,7 +101,7 @@
         this.data = []
         this.loading = true
 
-        axios.post(api, { urls: this.urls, blockerDisabled: this.blockerDisabled }).then((r) => {
+        axios.post(api, { urls: this.urls, proxy: this.proxy }).then((r) => {
           this.data = r.data;
         }).catch((e) => {
           this.loading = false

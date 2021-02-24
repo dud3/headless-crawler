@@ -10,6 +10,7 @@ import Browser, { Npage, Url, Extract } from './Browser';
 import core from "./core";
 
 import readability from "./readability";
+import proxy from "./proxy"
 
 const port = 3002
 const express = require('express')
@@ -130,6 +131,10 @@ app.use(bodyParser.raw());
 
     const urls: Array<Url> = [];
 
+    // Proxy mode
+
+    const proxymode = req.body.proxy && req.body.proxy == true
+
     // Swap browsers
 
     const loadJs = req.body.blockerDisabled && req.body.blockerDisabled == true
@@ -154,10 +159,20 @@ app.use(bodyParser.raw());
     npages.map(async npage => {
       promisses.push(new Promise(async (resolve, reject) => {
         try {
-          const read = await readability.main(npage, loadJs);
-          const extract = iextract(read.read);
+          let read = null
 
-          extract.fullContent = read.fullContent;
+          if (proxymode) {
+            read = await proxy.main(npage);
+            extracts.push(read);
+
+            await browser.closePage(npage);
+
+            return resolve(npage);
+          } else {
+            read = await readability.main(npage, loadJs);
+          }
+
+          const extract = iextract(read);
 
           extract.url = npage.url.url;
           extracts.push(extract);
