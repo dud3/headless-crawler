@@ -135,17 +135,14 @@ app.use(bodyParser.raw());
 
     const proxymode = req.body.proxy && req.body.proxy == true
 
-    // Swap browsers
-
-    const loadJs = req.body.blockerDisabled && req.body.blockerDisabled == true
-
     // todo: use this
 
-    if (loadJs) { browser = browser1; }
+    browser = browser1;
 
     const urlsWhitelisted = JSON.parse(fs.readFileSync('urls-whitelist.json'));
 
     req.body.urls.map(url => {
+      url = url.replace('https', '').replace('http', '').replace(':', '').replace('//', '')
       const blocker = (urlsWhitelisted.indexOf(url) > -1) ? undefined : true
       urls.push({ id: Math.random() + '', url: 'http://' + url, blocker: blocker });
     })
@@ -169,7 +166,7 @@ app.use(bodyParser.raw());
 
             return resolve(npage);
           } else {
-            read = await readability.main(npage, loadJs);
+            read = await readability.main(npage, true);
           }
 
           const extract = iextract(read);
